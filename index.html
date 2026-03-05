@@ -1,14 +1,618 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.2">
-  <style type="text/css">
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BetterUp Grow AI — RevOps Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --page-bg: #07090f;
+  --section-bg: #0c0f1a;
+  --card-bg: #111522;
+  --card-hover: #0d1020;
+  --gold: #e2a94a;
+  --gold-dim: #c4913f;
+  --blue: #3b82f6;
+  --blue-dim: #2563eb;
+  --green: #22c55e;
+  --green-dim: #1da348;
+  --purple: #a855f7;
+  --purple-dim: #9333ea;
+  --cyan: #06b6d4;
+  --cyan-dim: #0891b2;
+  --red: #ef4444;
+  --red-dim: #dc2626;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --border: #1e2535;
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--text);
+  font-family: 'Source Sans 3', sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+  background-image: repeating-linear-gradient(
+    0deg, transparent, transparent 59px, rgba(255,255,255,0.03) 59px, rgba(255,255,255,0.03) 60px
+  ), repeating-linear-gradient(
+    90deg, transparent, transparent 59px, rgba(255,255,255,0.03) 59px, rgba(255,255,255,0.03) 60px
+  );
+}
+
+.container { max-width: 1300px; margin: 0 auto; padding: 0 24px; }
+
+section { padding: 100px 0; }
+
+/* Eyebrow badge */
+.eyebrow {
+  display: inline-block;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  line-height: 1.4;
+}
+.eyebrow--gold { background: rgba(226,169,74,0.15); color: var(--gold); }
+.eyebrow--blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+.eyebrow--green { background: rgba(34,197,94,0.15); color: var(--green); }
+.eyebrow--purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+.eyebrow--cyan { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.eyebrow--red { background: rgba(239,68,68,0.15); color: var(--red); }
+
+/* Card base */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  background: var(--card-hover);
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.card--gold::before { background: linear-gradient(90deg, var(--gold), var(--gold-dim)); }
+.card--blue::before { background: linear-gradient(90deg, var(--blue), var(--blue-dim)); }
+.card--green::before { background: linear-gradient(90deg, var(--green), var(--green-dim)); }
+.card--purple::before { background: linear-gradient(90deg, var(--purple), var(--purple-dim)); }
+.card--cyan::before { background: linear-gradient(90deg, var(--cyan), var(--cyan-dim)); }
+.card--red::before { background: linear-gradient(90deg, var(--red), var(--red-dim)); }
+
+h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
+h1 { font-size: 2.8rem; color: var(--gold); font-weight: 700; line-height: 1.2; }
+h2 { font-size: 1.8rem; color: var(--text); margin-bottom: 12px; }
+h3 { font-size: 1.3rem; color: var(--text); }
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* HEADER */
+.header-section { padding: 60px 0 40px; border-bottom: 1px solid var(--border); }
+.header-subtitle {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-top: 8px;
+  max-width: 700px;
+}
+.header-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 16px;
+}
+
+/* NAV */
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(7,9,15,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+}
+.nav-inner {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-inner::-webkit-scrollbar { display: none; }
+.nav-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 16px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* KPI ROW */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+.kpi-card { padding: 28px 24px; }
+.kpi-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.kpi-sub {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.kpi-value--gold { color: var(--gold); }
+.kpi-value--blue { color: var(--blue); }
+.kpi-value--green { color: var(--green); }
+.kpi-value--purple { color: var(--purple); }
+.kpi-value--red { color: var(--red); }
+.kpi-value--cyan { color: var(--cyan); }
+
+/* TABLES */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+}
+table { width: 100%; border-collapse: collapse; min-width: 700px; }
+thead th {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: color 0.2s;
+  position: relative;
+}
+thead th:hover { color: var(--text); }
+thead th .sort-arrow {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 10px;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+thead th.sorted .sort-arrow { opacity: 1; color: var(--gold); }
+tbody td {
+  padding: 12px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(30,37,53,0.5);
+  vertical-align: middle;
+}
+tbody tr { transition: background 0.15s; }
+tbody tr:hover { background: rgba(226,169,74,0.04); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.badge--commit { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge--bestcase { background: rgba(59,130,246,0.15); color: var(--blue); }
+.badge--won { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge--progress { background: rgba(168,85,247,0.15); color: var(--purple); }
+.badge--overdue { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge--lost { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge--confirmed { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge--config { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.badge--positive { background: rgba(34,197,94,0.12); color: var(--green); }
+.badge--negative { background: rgba(239,68,68,0.12); color: var(--red); }
+.badge--mixed { background: rgba(226,169,74,0.12); color: var(--gold); }
+.badge--priority-1 { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge--priority-2 { background: rgba(226,169,74,0.15); color: var(--gold); }
+.badge--priority-3 { background: rgba(59,130,246,0.15); color: var(--blue); }
+.badge--priority-4 { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.badge--new { background: rgba(168,85,247,0.15); color: var(--purple); }
+.badge--expansion { background: rgba(59,130,246,0.15); color: var(--blue); }
+.badge--renewal { background: rgba(6,182,212,0.15); color: var(--cyan); }
+
+/* SEARCH */
+.search-box {
+  position: relative;
+  max-width: 360px;
+  margin-bottom: 20px;
+}
+.search-box input {
+  width: 100%;
+  background: var(--section-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px 10px 40px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-box input::placeholder { color: var(--muted); }
+.search-box input:focus { border-color: var(--gold); }
+.search-box .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Section header */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.section-header h2 { margin-bottom: 0; }
+
+/* Two column layout */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+/* Risk/Opp cards */
+.insight-card { padding: 24px; }
+.insight-card h4 { font-size: 1rem; margin-bottom: 6px; }
+.insight-card p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+.insight-card .insight-source {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+/* Sentiment bar */
+.sentiment-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.sentiment-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+}
+.sentiment-bar span { height: 100%; }
+.sentiment-bar .pos { background: var(--green); }
+.sentiment-bar .mix { background: var(--gold); }
+.sentiment-bar .neg { background: var(--red); }
+
+/* Action list */
+.action-list { display: flex; flex-direction: column; gap: 16px; }
+.action-item {
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.action-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gold);
+  min-width: 40px;
+}
+.action-body h4 { font-size: 1rem; margin-bottom: 4px; }
+.action-body p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+/* Trial grid */
+.trial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.trial-stat { padding: 24px; text-align: center; }
+.trial-stat .mono { font-size: 2rem; font-weight: 700; }
+.trial-stat .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; margin-top: 4px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+@media (max-width: 600px) {
+  h1 { font-size: 2rem; }
+  .kpi-value { font-size: 1.6rem; }
+  section { padding: 60px 0; }
+}
+</style>
 </head>
 <body>
-</body>
-</html>
+
+<!-- HEADER -->
+<div class="header-section">
+  <div class="container">
+    <span class="eyebrow eyebrow--gold">RevOps Report</span>
+    <h1 style="margin-top:16px;">BetterUp Grow AI<br><span style="font-style:italic; font-weight:400; font-size:0.7em; color:var(--text);">Product & Pipeline Analysis</span></h1>
+    <p class="header-subtitle">Comprehensive pipeline intelligence, trial performance, sentiment tracking, and recommended actions for the Grow AI Coach product line.</p>
+    <p class="header-date">Report generated: <span id="runDate"></span> &nbsp;|&nbsp; 109 open opportunities &nbsp;|&nbsp; Q1–Q3 2026 outlook</p>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav-bar">
+  <div class="container">
+    <div class="nav-inner">
+      <button class="nav-btn active" data-target="sec-kpi">KPIs</button>
+      <button class="nav-btn" data-target="sec-pipeline">Pipeline</button>
+      <button class="nav-btn" data-target="sec-launches">Launches</button>
+      <button class="nav-btn" data-target="sec-trials">Trials</button>
+      <button class="nav-btn" data-target="sec-sentiment">Sentiment</button>
+      <button class="nav-btn" data-target="sec-risks">Risks & Opps</button>
+      <button class="nav-btn" data-target="sec-actions">Actions</button>
+    </div>
+  </div>
+</nav>
+
+<!-- KPI CARDS -->
+<section id="sec-kpi">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow eyebrow--gold">Key Metrics</span>
+      <h2>Executive Summary</h2>
+    </div>
+    <div class="kpi-grid">
+      <div class="card card--gold kpi-card">
+        <div class="kpi-label">High-Confidence Pipeline</div>
+        <div class="kpi-value kpi-value--gold mono">$36.9M</div>
+        <div class="kpi-sub">32 opps — Commit + Best Case</div>
+      </div>
+      <div class="card card--blue kpi-card">
+        <div class="kpi-label">Open Opportunities</div>
+        <div class="kpi-value kpi-value--blue mono">109</div>
+        <div class="kpi-sub">Across enterprise accounts</div>
+      </div>
+      <div class="card card--green kpi-card">
+        <div class="kpi-label">Closed Won (90 Days)</div>
+        <div class="kpi-value kpi-value--green mono">100</div>
+        <div class="kpi-sub">Including $4.7M BlackRock renewal</div>
+      </div>
+      <div class="card card--purple kpi-card">
+        <div class="kpi-label">Commit Pipeline</div>
+        <div class="kpi-value kpi-value--purple mono">$21.9M</div>
+        <div class="kpi-sub">9 opps — Avg $2.4M deal size</div>
+      </div>
+      <div class="card card--cyan kpi-card">
+        <div class="kpi-label">Active Trials</div>
+        <div class="kpi-value kpi-value--cyan mono">30+</div>
+        <div class="kpi-sub">In progress with strong conversion</div>
+      </div>
+      <div class="card card--red kpi-card">
+        <div class="kpi-label">Overdue Trials (At Risk)</div>
+        <div class="kpi-value kpi-value--red mono">15+</div>
+        <div class="kpi-sub">Require immediate attention</div>
+      </div>
+      <div class="card card--green kpi-card">
+        <div class="kpi-label">Sentiment — Positive</div>
+        <div class="kpi-value kpi-value--green mono">25+</div>
+        <div class="kpi-sub">Accounts reporting positive feedback</div>
+      </div>
+      <div class="card card--red kpi-card">
+        <div class="kpi-label">Sentiment — Concerns</div>
+        <div class="kpi-value kpi-value--red mono">8</div>
+        <div class="kpi-sub">Accounts with AI trust/complexity issues</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE TABLE -->
+<section id="sec-pipeline" style="background: var(--section-bg);">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow eyebrow--purple">Pipeline</span>
+      <h2>Grow AI Pipeline — High-Value Opportunities</h2>
+    </div>
+
+    <div class="search-box">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="pipelineSearch" placeholder="Search account, stage, owner...">
+    </div>
+
+    <div class="table-wrap">
+      <table id="pipelineTable">
+        <thead>
+          <tr>
+            <th data-col="0">Account <span class="sort-arrow">↕</span></th>
+            <th data-col="1" data-type="num">Amount <span class="sort-arrow">↕</span></th>
+            <th data-col="2">Stage <span class="sort-arrow">↕</span></th>
+            <th data-col="3">Forecast <span class="sort-arrow">↕</span></th>
+            <th data-col="4">Close Date <span class="sort-arrow">↕</span></th>
+            <th data-col="5">Owner <span class="sort-arrow">↕</span></th>
+            <th data-col="6">Type <span class="sort-arrow">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="pipelineBody">
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Forecast Summary -->
+    <div style="margin-top:40px;">
+      <h3 style="margin-bottom:16px;"><span class="eyebrow eyebrow--blue" style="margin-right:12px;">Summary</span> Pipeline by Forecast Category</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Forecast</th>
+              <th>Opp Count</th>
+              <th>Total Value</th>
+              <th>Avg Deal Size</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge--commit">Commit</span></td>
+              <td class="mono">9</td>
+              <td class="mono" style="color:var(--green);">$21,955,479</td>
+              <td class="mono">$2,439,498</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--bestcase">Best Case</span></td>
+              <td class="mono">23</td>
+              <td class="mono" style="color:var(--blue);">$14,932,181</td>
+              <td class="mono">$649,225</td>
+            </tr>
+            <tr style="font-weight:700; border-top: 1px solid var(--border);">
+              <td style="color:var(--gold);">Total High-Confidence</td>
+              <td class="mono" style="color:var(--gold);">32</td>
+              <td class="mono" style="color:var(--gold);">$36,887,660</td>
+              <td class="mono" style="color:var(--muted);">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- UPCOMING LAUNCHES -->
+<section id="sec-launches">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow eyebrow--green">Launches</span>
+      <h2>Upcoming Launches & Implementations</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table id="launchTable">
+        <thead>
+          <tr>
+            <th data-col="0">Account <span class="sort-arrow">↕</span></th>
+            <th data-col="1">Go-Live Date <span class="sort-arrow">↕</span></th>
+            <th data-col="2">Status <span class="sort-arrow">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="launchBody">
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:40px;">
+      <h3 style="margin-bottom:16px;"><span class="eyebrow eyebrow--cyan" style="margin-right:12px;">ILR Case</span> Active ILR Case</h3>
+      <div class="card card--cyan" style="padding:24px;">
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+          <div>
+            <span class="badge badge--progress">Continued in Next Sprint</span>
+            <h4 style="margin-top:8px;">Case #00016958</h4>
+            <p style="color:var(--muted);font-size:14px;margin-top:4px;">New ILR Product Type: AI-Only Coaching</p>
+            <p style="color:var(--muted);font-size:13px;margin-top:8px;">Owner: <span style="color:var(--text);">Addison Slentz</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;">
+      <h3 style="margin-bottom:16px;"><span class="eyebrow eyebrow--blue" style="margin-right:12px;">Timeline</span> Implementation Insights</h3>
+      <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px,1fr));">
+        <div class="card card--blue" style="padding:24px;">
+          <div class="kpi-label">Standard Launch Timeline</div>
+          <div class="mono" style="font-size:1.4rem;color:var(--blue);margin-top:4px;">~4 Weeks</div>
+          <div class="kpi-sub">From agreement to launch</div>
+        </div>
+        <div class="card card--purple" style="padding:24px;">
+          <div class="kpi-label">Readiness Areas</div>
+          <div class="mono" style="font-size:1.4rem;color:var(--purple);margin-top:4px;">4 Key Areas</div>
+          <div class="kpi-sub">Technical · Member · Coach · Business</div>
+        </div>
+        <div class="card card--cyan" style="padding:24px;">
+          <div class="kpi-label">Testing Window</div>
+          <div class="mono" style="font-size:1.4rem;color:var(--cyan);margin-top:4px;">~1.5 Weeks</div>
+          <div class="kpi-sub">Before scheduled launch date</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRIALS & DEPLOYMENTS -->
+<section id="sec-trials" style="background: var(--section-bg);">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow eyebrow--cyan">Trials & Deployments</span>
+      <h2>Trial & Pilot Performance</h2>
+    </div>
+
+    <div class="trial-grid">
+      <div class="card card--green trial-stat">
+        <div class="mono" style="color:var(--green);">45+</div>
+        <div class="label">Completed — Won</div>
+      </div>
+      <div class="card card--purple trial-stat">
+        <div class="mono" style="color:var(--purple);">30+</div>
+        <div class="label">In Progress</div>
+      </div>
+      <div class="card card--red trial-stat">
+        <div class="mono" style="color:var(--red);">15+</div>
+        <div class="label">Overdue</div>
+      </div>
+      <div class="card card--gold trial-stat">
+        <div class="mono" style="color:var(--muted);">10+</div>
+        <div class="label">Completed — Lost</div>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom:16px;"><span class="eyebrow eyebrow--purple" style="margin-right:12px;">Active</span> Notable Active Trials</h3>
+    <div class="table-wrap">
+      <table id="trialTable">
+        <thead>
+          <tr>
+            <th data-col="0">Account <span class="sort-arrow">↕</span></th>
+            <th data-col="1" data-type="num">Amount <span class="sort-arrow">↕</span></th>
+            <th data-col="2">Start Date <span class="sort-arrow">↕</span></th>
+            <th data-col="3">Status <span class="sort-arrow">↕</span></th>
+            <th data-col="4">
