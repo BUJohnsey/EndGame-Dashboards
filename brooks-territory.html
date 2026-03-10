@@ -1,1 +1,1233 @@
-<html><body><h1>Loading territory intelligence...</h1></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Territory Intelligence Dashboard — Brooks Dougherty</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07090f; --section-bg: #0c0f1a; --card-bg: #111522; --border: #1e2535;
+  --text: #e2e8f0; --muted: #64748b; --gold: #e2a94a; --blue: #3b82f6;
+  --green: #22c55e; --purple: #a855f7; --cyan: #06b6d4; --red: #ef4444;
+  --gold-dim: #c4912e; --blue-dim: #2563eb; --green-dim: #16a34a;
+  --purple-dim: #9333ea; --cyan-dim: #0891b2; --red-dim: #dc2626;
+}
+body {
+  background: var(--bg); color: var(--text); font-family: 'Source Sans 3', sans-serif;
+  font-size: 15px; line-height: 1.6; min-height: 100vh;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,0.03) 59px, rgba(255,255,255,0.03) 60px),
+                    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,0.03) 59px, rgba(255,255,255,0.03) 60px);
+}
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: var(--section-bg); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; height: 56px;
+  overflow-x: auto; gap: 4px;
+}
+nav .brand { font-family: 'Playfair Display', serif; color: var(--gold); font-weight: 700; font-size: 16px; margin-right: 20px; white-space: nowrap; }
+nav button {
+  background: transparent; border: none; color: var(--muted); font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px; font-weight: 600; padding: 8px 16px; cursor: pointer; border-radius: 6px;
+  transition: all 0.2s ease; white-space: nowrap; letter-spacing: 0.3px;
+}
+nav button:hover { color: var(--text); background: rgba(226,169,74,0.08); }
+nav button.active { color: var(--gold); background: rgba(226,169,74,0.15); }
+.container { max-width: 1300px; margin: 0 auto; padding: 76px 24px 60px; }
+.section { display: none; }
+.section.active { display: block; }
+h1 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 32px; margin-bottom: 6px; }
+h2 { font-family: 'Playfair Display', serif; color: var(--text); font-size: 22px; margin-bottom: 16px; }
+h3 { font-family: 'Playfair Display', serif; color: var(--text); font-size: 18px; margin-bottom: 12px; }
+.subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+.eyebrow {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;
+  display: inline-block; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px;
+}
+.eyebrow-gold { color: var(--gold); background: rgba(226,169,74,0.15); }
+.eyebrow-blue { color: var(--blue); background: rgba(59,130,246,0.15); }
+.eyebrow-green { color: var(--green); background: rgba(34,197,94,0.15); }
+.eyebrow-purple { color: var(--purple); background: rgba(168,85,247,0.15); }
+.eyebrow-cyan { color: var(--cyan); background: rgba(6,182,212,0.15); }
+.eyebrow-red { color: var(--red); background: rgba(239,68,68,0.15); }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 40px; }
+.kpi-card {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; position: relative; overflow: hidden; transition: all 0.2s ease;
+}
+.kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.kpi-card:hover { transform: translateY(-2px); background: #0d1020; }
+.kpi-card .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+.kpi-card .kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; }
+.kpi-gold::before { background: var(--gold); } .kpi-gold .kpi-value { color: var(--gold); }
+.kpi-blue::before { background: var(--blue); } .kpi-blue .kpi-value { color: var(--blue); }
+.kpi-green::before { background: var(--green); } .kpi-green .kpi-value { color: var(--green); }
+.kpi-purple::before { background: var(--purple); } .kpi-purple .kpi-value { color: var(--purple); }
+.kpi-cyan::before { background: var(--cyan); } .kpi-cyan .kpi-value { color: var(--cyan); }
+.kpi-red::before { background: var(--red); } .kpi-red .kpi-value { color: var(--red); }
+
+.card {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+  padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden; transition: all 0.2s ease;
+}
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold); }
+.card:hover { transform: translateY(-2px); background: #0d1020; }
+.card.accent-blue::before { background: var(--blue); }
+.card.accent-green::before { background: var(--green); }
+.card.accent-purple::before { background: var(--purple); }
+.card.accent-cyan::before { background: var(--cyan); }
+.card.accent-red::before { background: var(--red); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  background: rgba(226,169,74,0.08); color: var(--gold); font-weight: 700; text-align: left;
+  padding: 10px 12px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+}
+thead th:hover { background: rgba(226,169,74,0.15); }
+tbody td { padding: 10px 12px; border-bottom: 1px solid rgba(30,37,53,0.5); vertical-align: top; }
+tbody tr:hover { background: rgba(226,169,74,0.04); }
+.mono { font-family: 'JetBrains Mono', monospace; }
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.5px; white-space: nowrap;
+}
+.badge-purple { color: var(--purple); background: rgba(168,85,247,0.15); }
+.badge-gold { color: var(--gold); background: rgba(226,169,74,0.15); }
+.badge-red { color: var(--red); background: rgba(239,68,68,0.15); }
+.badge-green { color: var(--green); background: rgba(34,197,94,0.15); }
+.badge-cyan { color: var(--cyan); background: rgba(6,182,212,0.15); }
+.badge-blue { color: var(--blue); background: rgba(59,130,246,0.15); }
+
+.search-input {
+  background: var(--section-bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 16px; color: var(--text); font-family: 'Source Sans 3', sans-serif;
+  font-size: 14px; width: 100%; max-width: 400px; margin-bottom: 16px; outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--gold); }
+.search-input::placeholder { color: var(--muted); }
+
+.accordion { margin-bottom: 12px; }
+.accordion-header {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; transition: all 0.2s ease; position: relative; overflow: hidden;
+}
+.accordion-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold); }
+.accordion-header:hover { background: #0d1020; }
+.accordion-header .acc-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--text); }
+.accordion-header .acc-subtitle { color: var(--muted); font-size: 13px; margin-left: 12px; }
+.accordion-header .acc-arr { font-family: 'JetBrains Mono', monospace; color: var(--gold); font-weight: 700; font-size: 15px; margin-left: auto; margin-right: 16px; }
+.accordion-header .acc-arrow { color: var(--gold); font-size: 18px; transition: transform 0.2s; }
+.accordion-header.open .acc-arrow { transform: rotate(180deg); }
+.accordion-body {
+  max-height: 0; overflow: hidden; transition: max-height 0.35s ease;
+  background: var(--card-bg); border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 12px 12px;
+}
+.accordion-body.open { max-height: 3000px; }
+.accordion-content { padding: 20px; }
+.accordion-content p { margin-bottom: 8px; }
+.accordion-content ul { margin: 8px 0 12px 20px; }
+.accordion-content li { margin-bottom: 4px; }
+.accordion-content .detail-label { color: var(--gold); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; margin-top: 14px; }
+
+.section-total {
+  font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700;
+  color: var(--gold); margin-bottom: 12px; text-align: right;
+}
+.checklist { list-style: none; padding: 0; }
+.checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(30,37,53,0.5); }
+.checklist li:last-child { border-bottom: none; }
+.checklist input[type="checkbox"] {
+  accent-color: var(--gold); width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; cursor: pointer;
+}
+.checklist .task-text { font-size: 14px; }
+.checklist .task-account { font-weight: 700; color: var(--gold); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+.score-hot { color: var(--red); }
+.score-gold { color: var(--gold); }
+.score-cyan { color: var(--cyan); }
+
+.meeting-card { display: flex; align-items: flex-start; gap: 16px; padding: 14px 0; border-bottom: 1px solid rgba(30,37,53,0.5); }
+.meeting-date { font-family: 'JetBrains Mono', monospace; color: var(--gold); font-weight: 700; font-size: 13px; white-space: nowrap; min-width: 70px; }
+.meeting-info .meeting-title { font-weight: 700; margin-bottom: 2px; }
+.meeting-info .meeting-people { font-size: 13px; color: var(--muted); }
+
+.pipeline-section { margin-bottom: 40px; }
+.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+.table-wrap table { min-width: 700px; }
+
+.status-closing { color: var(--green); font-weight: 700; }
+.status-risk { color: var(--red); font-weight: 700; }
+.status-active { color: var(--cyan); font-weight: 700; }
+.status-watch { color: var(--gold); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">EndGame</span>
+  <button class="active" onclick="showSection('overview')">Overview</button>
+  <button onclick="showSection('signals')">Priority Signals</button>
+  <button onclick="showSection('pipeline')">Pipeline</button>
+  <button onclick="showSection('leadership')">Leadership Changes</button>
+  <button onclick="showSection('market')">Market Intelligence</button>
+  <button onclick="showSection('deals')">Deal Insights</button>
+  <button onclick="showSection('actions')">Action Plan</button>
+</nav>
+
+<div class="container">
+
+<!-- ========================== OVERVIEW TAB ========================== -->
+<div id="overview" class="section active">
+  <h1>Brooks Dougherty</h1>
+  <p class="subtitle">Territory Intelligence Dashboard &mdash; Signal Scan &bull; Updated March 10, 2025</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-gold">
+      <div class="kpi-label">Accounts Scanned</div>
+      <div class="kpi-value">91</div>
+    </div>
+    <div class="kpi-card kpi-red">
+      <div class="kpi-label">High-Priority Signals</div>
+      <div class="kpi-value">14</div>
+    </div>
+    <div class="kpi-card kpi-red">
+      <div class="kpi-label">Deals at Risk</div>
+      <div class="kpi-value">4</div>
+    </div>
+    <div class="kpi-card kpi-green">
+      <div class="kpi-label">Total Pipeline ARR</div>
+      <div class="kpi-value">$3.18M</div>
+    </div>
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-label">Leadership Changes</div>
+      <div class="kpi-value">3</div>
+    </div>
+    <div class="kpi-card kpi-cyan">
+      <div class="kpi-label">Funding / M&A Events</div>
+      <div class="kpi-value">2</div>
+    </div>
+  </div>
+
+  <!-- Pipeline by Stage -->
+  <div class="card">
+    <span class="eyebrow eyebrow-purple">Pipeline by Stage</span>
+    <div class="table-wrap" style="margin-top:12px;">
+      <table>
+        <thead><tr><th>Stage</th><th>Count</th><th>Total Value</th></tr></thead>
+        <tbody>
+          <tr><td>5 - Contracting</td><td class="mono">2</td><td class="mono">$203K</td></tr>
+          <tr><td>2 - VisionMatch</td><td class="mono">4</td><td class="mono">$650K</td></tr>
+          <tr><td>1 - Initial Qualification</td><td class="mono">7</td><td class="mono">$1.23M</td></tr>
+          <tr><td>0 - Gain Access</td><td class="mono">8</td><td class="mono">$1.1M</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Upcoming Meetings -->
+  <div class="card accent-cyan">
+    <span class="eyebrow eyebrow-cyan">Upcoming Meetings This Week</span>
+    <div style="margin-top:12px;">
+      <div class="meeting-card"><div class="meeting-date">3/10 Today</div><div class="meeting-info"><div class="meeting-title">Gensler — Uplift Event Discussion</div><div class="meeting-people">Karen Mozes, Michael Bodziner</div></div></div>
+      <div class="meeting-card"><div class="meeting-date">3/10 Today</div><div class="meeting-info"><div class="meeting-title">GitLab — RFP Discussion</div><div class="meeting-people">Lauren Cairns, Courtney Schneider, Emily Bogaard</div></div></div>
+      <div class="meeting-card"><div class="meeting-date">3/16</div><div class="meeting-info"><div class="meeting-title">ESAB — Intro Meeting</div><div class="meeting-people">Laleh Malek (VP Talent & Org Dev)</div></div></div>
+      <div class="meeting-card"><div class="meeting-date">3/16</div><div class="meeting-info"><div class="meeting-title">Bio-Rad — Reconnect</div><div class="meeting-people">Jessica Kwock, David Evans</div></div></div>
+      <div class="meeting-card"><div class="meeting-date">3/16</div><div class="meeting-info"><div class="meeting-title">Blue Shield — Touch Base</div><div class="meeting-people">Sivu Ramu</div></div></div>
+      <div class="meeting-card"><div class="meeting-date">3/17</div><div class="meeting-info"><div class="meeting-title">Cummins — Uplift Prep</div><div class="meeting-people">Fiona P Devan</div></div></div>
+      <div class="meeting-card"><div class="meeting-date">3/17</div><div class="meeting-info"><div class="meeting-title">Expedia — Uplift Prep</div><div class="meeting-people">Christine Wickland</div></div></div>
+      <div class="meeting-card"><div class="meeting-date">3/17</div><div class="meeting-info"><div class="meeting-title">Gensler — Discovery Workshop</div><div class="meeting-people">Karen Mozes</div></div></div>
+      <div class="meeting-card"><div class="meeting-date">3/19</div><div class="meeting-info"><div class="meeting-title">Corewell Health — Intro Meeting</div><div class="meeting-people">Channing McCarthy</div></div></div>
+      <div class="meeting-card"><div class="meeting-date">3/27</div><div class="meeting-info"><div class="meeting-title">Wonderful Company — Lunch</div><div class="meeting-people">Kimberley Fernandes</div></div></div>
+    </div>
+  </div>
+
+  <!-- Accounts Needing Re-engagement -->
+  <div class="card accent-red">
+    <span class="eyebrow eyebrow-red">Accounts Needing Re-engagement</span>
+    <div class="table-wrap" style="margin-top:12px;">
+      <table>
+        <thead><tr><th>Account</th><th>Interactions (90d)</th><th>Pipeline</th><th>Signal</th></tr></thead>
+        <tbody>
+          <tr><td>The Hartford</td><td class="mono">25</td><td class="mono">$125K</td><td>RFI re-scoped for summer 2026</td></tr>
+          <tr><td>Databricks</td><td class="mono">39</td><td class="mono">$200K</td><td>Advisor facilitating HR intro</td></tr>
+          <tr><td>Stripe</td><td class="mono">21</td><td class="mono">$300K</td><td>Sales enablement outreach stage</td></tr>
+          <tr><td>Unity Technologies</td><td class="mono">12</td><td class="mono">$125K</td><td>AI coaching interest but timing is CY2027</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========================== PRIORITY SIGNALS TAB ========================== -->
+<div id="signals" class="section">
+  <h2>Priority Signals</h2>
+  <p class="subtitle">All territory signals ranked by priority score. Click column headers to sort.</p>
+  <input type="text" class="search-input" id="signalSearch" onkeyup="filterTable('signalSearch','signalTable')" placeholder="Search signals by account, type, detail…">
+  <div class="table-wrap">
+    <table id="signalTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable('signalTable',0)">Rank ↕</th>
+          <th onclick="sortTable('signalTable',1)">Account ↕</th>
+          <th onclick="sortTable('signalTable',2)">Signal Type ↕</th>
+          <th onclick="sortTable('signalTable',3)">Signal Detail ↕</th>
+          <th onclick="sortTable('signalTable',4)">Recommended Action ↕</th>
+          <th onclick="sortTable('signalTable',5)">Score ↕</th>
+        </tr>
+      </thead>
+      <tbody id="signalTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========================== PIPELINE TAB ========================== -->
+<div id="pipeline" class="section">
+  <h2>Pipeline</h2>
+  <p class="subtitle">All 21 open opportunities totaling <span class="mono" style="color:var(--gold);">$3.18M</span> ARR</p>
+
+  <!-- Closing This Month -->
+  <div class="pipeline-section">
+    <span class="eyebrow eyebrow-green">Closing This Month</span>
+    <div class="section-total">Section Total: $203,000</div>
+    <div class="table-wrap">
+      <table id="closingTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable('closingTable',0)">Account ↕</th>
+            <th onclick="sortTable('closingTable',1)">Opportunity ↕</th>
+            <th onclick="sortTable('closingTable',2)">ARR ↕</th>
+            <th onclick="sortTable('closingTable',3)">Stage ↕</th>
+            <th onclick="sortTable('closingTable',4)">Close Date ↕</th>
+            <th onclick="sortTable('closingTable',5)">Forecast ↕</th>
+            <th onclick="sortTable('closingTable',6)">Status ↕</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>The Clorox Company</td><td>Lead Pilot</td><td class="mono">$39,000</td><td>5 - Contracting</td><td class="mono">Mar 13</td><td>Commit</td><td class="status-closing">Closing</td>
+          </tr>
+          <tr>
+            <td>Blue Shield of CA</td><td>Lead</td><td class="mono">$164,000</td><td>5 - Contracting</td><td class="mono">Mar 31</td><td>Commit</td><td class="status-closing">Closing</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- High-Value $200K+ -->
+  <div class="pipeline-section">
+    <span class="eyebrow eyebrow-gold">High-Value $200K+</span>
+    <div class="section-total">Section Total: $1,200,000</div>
+    <div class="table-wrap">
+      <table id="highValueTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable('highValueTable',0)">Account ↕</th>
+            <th onclick="sortTable('highValueTable',1)">Opportunity ↕</th>
+            <th onclick="sortTable('highValueTable',2)">ARR ↕</th>
+            <th onclick="sortTable('highValueTable',3)">Stage ↕</th>
+            <th onclick="sortTable('highValueTable',4)">Close Date ↕</th>
+            <th onclick="sortTable('highValueTable',5)">Forecast ↕</th>
+            <th onclick="sortTable('highValueTable',6)">Status ↕</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Gensler</td><td>VisionMatch</td><td class="mono">$250,000</td><td>2 - VisionMatch</td><td class="mono">TBD</td><td>Pipeline</td><td class="status-active">Active Discovery</td></tr>
+          <tr><td>Micron Technology</td><td>AI Coaching RFP</td><td class="mono">$200,000</td><td>1 - Initial Qualification</td><td class="mono">Apr 3 (RFP)</td><td>Pipeline</td><td class="status-active">RFP Pending</td></tr>
+          <tr><td>GitLab</td><td>Initial Qualification</td><td class="mono">$250,000</td><td>1 - Initial Qualification</td><td class="mono">TBD</td><td>Pipeline</td><td class="status-active">RFP Discussion Today</td></tr>
+          <tr><td>Stripe</td><td>Sales Enablement</td><td class="mono">$300,000</td><td>0 - Gain Access</td><td class="mono">TBD</td><td>Pipeline</td><td class="status-watch">Needs Re-engagement</td></tr>
+          <tr><td>Databricks</td><td>HR Intro</td><td class="mono">$200,000</td><td>0 - Gain Access</td><td class="mono">TBD</td><td>Pipeline</td><td class="status-watch">Needs Re-engagement</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Other Pipeline -->
+  <div class="pipeline-section">
+    <span class="eyebrow eyebrow-cyan">Other Pipeline</span>
+    <div class="section-total">Section Total: $1,777,000</div>
+    <div class="table-wrap">
+      <table id="otherPipeTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable('otherPipeTable',0)">Account ↕</th>
+            <th onclick="sortTable('otherPipeTable',1)">Opportunity ↕</th>
+            <th onclick="sortTable('otherPipeTable',2)">ARR ↕</th>
+            <th onclick="sortTable('otherPipeTable',3)">Stage ↕</th>
+            <th onclick="sortTable('otherPipeTable',4)">Close Date ↕</th>
+            <th onclick="sortTable('otherPipeTable',5)">Forecast ↕</th>
+            <th onclick="sortTable('otherPipeTable',6)">Status ↕</th>
+          </tr>
+        </thead>
+        <tbody id="otherPipeBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========================== LEADERSHIP CHANGES TAB ========================== -->
+<div id="leadership" class="section">
+  <h2>Leadership Changes</h2>
+  <p class="subtitle">Tracked leadership changes across territory accounts</p>
+  <div class="table-wrap">
+    <table id="leadershipTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable('leadershipTable',0)">Account ↕</th>
+          <th onclick="sortTable('leadershipTable',1)">Role ↕</th>
+          <th onclick="sortTable('leadershipTable',2)">Person ↕</th>
+          <th onclick="sortTable('leadershipTable',3)">Date ↕</th>
+          <th onclick="sortTable('leadershipTable',4)">Relevance ↕</th>
+          <th onclick="sortTable('leadershipTable',5)">Outreach Angle ↕</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ESAB</td><td>VP Talent & Org Dev</td><td>Laleh Malek</td><td class="mono">Mar 2025</td>
+          <td><span class="badge badge-red">High</span></td>
+          <td>New leader intro — meeting scheduled 3/16; position for coaching platform discussion</td>
+        </tr>
+        <tr>
+          <td>Clorox</td><td>CFO</td><td>Luc Bellet</td><td class="mono">Feb 2025</td>
+          <td><span class="badge badge-gold">Medium</span></td>
+          <td>Presenting at Citi Global Consumer Conference; sustainability & cost efficiency alignment opportunity</td>
+        </tr>
+        <tr>
+          <td>Corewell Health</td><td>Unknown (New Contact)</td><td>Channing McCarthy</td><td class="mono">Mar 2025</td>
+          <td><span class="badge badge-gold">Medium</span></td>
+          <td>Intro meeting scheduled 3/19; explore leadership development needs in healthcare</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========================== MARKET INTELLIGENCE TAB ========================== -->
+<div id="market" class="section">
+  <h2>Market Intelligence</h2>
+  <p class="subtitle">External signals, earnings, and industry events impacting territory accounts</p>
+
+  <!-- Clorox -->
+  <div class="card">
+    <span class="eyebrow eyebrow-gold">The Clorox Company</span>
+    <h3 style="margin-top:8px;">Earnings &amp; Corporate News</h3>
+
+    <div class="table-wrap" style="margin-top:12px; margin-bottom:20px;">
+      <table>
+        <thead><tr><th>Theme</th><th>Detail</th><th>Sentiment</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Q2 FY2026 Earnings (Feb 10)</td>
+            <td>EPS $1.39 vs $1.44 forecast; revenue $1.67B — mixed results, stock dipped</td>
+            <td><span class="badge badge-gold">Mixed</span></td>
+          </tr>
+          <tr>
+            <td>CFO at Citi Global Conference</td>
+            <td>CFO Luc Bellet presenting at Citi Global Consumer Conference (Feb 24)</td>
+            <td><span class="badge badge-cyan">Neutral</span></td>
+          </tr>
+          <tr>
+            <td>Sustainability Focus</td>
+            <td>Embedding sustainability into product design and supply chain</td>
+            <td><span class="badge badge-green">Positive</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="detail-label" style="color:var(--gold);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Sales Angle</div>
+    <p style="color:var(--muted);font-size:13px;">Mixed earnings may drive leadership to invest in talent development and retention. Sustainability alignment provides a values-based pitch angle for BetterUp positioning. CFO conference appearance signals openness to strategic investment conversations.</p>
+  </div>
+
+  <!-- Blue Shield -->
+  <div class="card accent-blue">
+    <span class="eyebrow eyebrow-blue">Blue Shield of California</span>
+    <h3 style="margin-top:8px;">Network &amp; Industry Signals</h3>
+
+    <div class="table-wrap" style="margin-top:12px; margin-bottom:20px;">
+      <table>
+        <thead><tr><th>Theme</th><th>Detail</th><th>Sentiment</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Network Disruption</td>
+            <td>Major disruption in Fresno/San Joaquin Valley with Community Medical Centers leaving network</td>
+            <td><span class="badge badge-red">Negative</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="detail-label" style="color:var(--gold);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Sales Angle</div>
+    <p style="color:var(--muted);font-size:13px;">Network disruption creates organizational stress and change management needs. Position BetterUp coaching as a resilience and leadership support tool during this turbulent period. Use empathy-first messaging with champions.</p>
+  </div>
+
+  <!-- Industry Signals -->
+  <div class="card accent-cyan">
+    <span class="eyebrow eyebrow-cyan">Industry Signals</span>
+    <div class="table-wrap" style="margin-top:12px;">
+      <table>
+        <thead><tr><th>Signal</th><th>Sector</th><th>Detail</th><th>Impact</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>AI Coaching RFPs Rising</td><td>Cross-Industry</td>
+            <td>Micron launching AI Coaching RFP (due Apr 3); GitLab consolidating coaching vendors; Zoom evaluating AI coaching</td>
+            <td><span class="badge badge-green">Opportunity</span></td>
+          </tr>
+          <tr>
+            <td>Uplift Conference Momentum</td><td>HR / L&D</td>
+            <td>Multiple enterprise accounts registering teams (Blue Shield, Gensler, Micron, Teach For America) for April 15-16 SF event</td>
+            <td><span class="badge badge-green">Opportunity</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========================== DEAL INSIGHTS TAB ========================== -->
+<div id="deals" class="section">
+  <h2>Deal Insights</h2>
+  <p class="subtitle">Detailed intelligence on each active deal. Click to expand.</p>
+
+  <!-- Clorox -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">The Clorox Company</span>
+        <span class="acc-subtitle">Lead Pilot — 5 Contracting — Close Mar 13</span>
+      </div>
+      <span class="acc-arr">$39,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Deal is in final signature routing. Allison Evans confirmed she's "good to move forward" and can sign via DocuSign. Order Form signed by Allison; awaiting Laura Bullas's internal routing &amp; PO confirmation.</p>
+        <div class="detail-label">Key Intelligence</div>
+        <ul>
+          <li>Signed copy sent to Laura Bullas; awaiting Clorox internal routing</li>
+          <li>Need to clarify if PO will be issued in addition to signed Order Form</li>
+          <li>Q2 FY2026 Earnings: EPS $1.39 vs $1.44 forecast; revenue $1.67B — mixed results</li>
+          <li>CFO Luc Bellet presenting at Citi Global Consumer Conference (Feb 24)</li>
+          <li>Sustainability focus: embedding into product design and supply chain</li>
+        </ul>
+        <div class="detail-label">Champions</div>
+        <p>Allison Evans (signer, confirmed DocuSign), Laura Bullas (internal routing)</p>
+        <div class="detail-label">Pain Points</div>
+        <ul>
+          <li>Earlier concern about 8/9-month term not allowing coaching extension into Fall 2026 — resolved with 12-month structure</li>
+        </ul>
+        <div class="detail-label">Risks</div>
+        <ul>
+          <li>PO process may add delay if additional approvals needed beyond signed Order Form</li>
+          <li>Internal routing timeline at Clorox is unknown</li>
+        </ul>
+        <div class="detail-label">Next Steps</div>
+        <ul>
+          <li>Confirm PO process and await Laura's fully executed copy</li>
+          <li>Implementation prep: Kick off IT/SSO work ASAP</li>
+          <li>Propose March 17 meeting with Sean for handoff</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Blue Shield -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Blue Shield of CA</span>
+        <span class="acc-subtitle">Lead — 5 Contracting — Close Mar 31</span>
+      </div>
+      <span class="acc-arr">$164,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Contract with legal for redlines; targeting mid-to-late March signature. Redlines expected this week; tracking Mar 31 PO date; offshore IT approval question pending.</p>
+        <div class="detail-label">Key Intelligence</div>
+        <ul>
+          <li>Redlines expected back this week from Gina Pittman</li>
+          <li>If any services done offshore, Blue Shield needs IT approval — Brooks following up</li>
+          <li>Supplier Registration: Paymode/Jagger invitation not yet received by BetterUp</li>
+          <li>AI Coach not enabled initially; would require extensive security approvals</li>
+          <li>Major network disruption in Fresno/San Joaquin Valley with Community Medical Centers leaving network</li>
+          <li>5 attendees registered for Uplift (Sivu, Lily, Brittney, Amber, Jessica); workshop/session planning underway</li>
+        </ul>
+        <div class="detail-label">Champions</div>
+        <p>Sivu Ramu, Lily VanderStaay, Brittney Anderson</p>
+        <div class="detail-label">Pain Points</div>
+        <ul>
+          <li>Offshore IT approval process is a potential bottleneck</li>
+          <li>Supplier registration not yet started (Paymode/Jagger invitation missing)</li>
+          <li>AI Coach blocked by security review process</li>
+        </ul>
+        <div class="detail-label">Risks</div>
+        <ul>
+          <li>Redline turnaround could push past Mar 31 close date</li>
+          <li>Network disruption may distract stakeholders and shift budget priorities</li>
+          <li>Supplier registration delay could hold up PO even after signature</li>
+        </ul>
+        <div class="detail-label">Next Steps</div>
+        <ul>
+          <li>Follow up on redlines arrival from Gina Pittman</li>
+          <li>Address offshore IT approval question definitively</li>
+          <li>Resolve Paymode/Jagger supplier registration</li>
+          <li>Touch base with Sivu on 3/16</li>
+          <li>Continue Uplift workshop/session planning</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gensler -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Gensler</span>
+        <span class="acc-subtitle">VisionMatch — 2 VisionMatch</span>
+      </div>
+      <span class="acc-arr">$250,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Active discovery underway with CHRO involvement. Discovery workshop scheduled 3/17. Karen Mozes proposed 1-year test drive; BetterUp positioning multiple options (Lead pilot, Ready trial, wider deployment).</p>
+        <div class="detail-label">Key Intelligence</div>
+        <ul>
+          <li>Difficulty getting coaching spend data from regions; only 3 of many regions have reported</li>
+          <li>5 people attending Uplift (Michael, Karen, Betsy, Christine, Allie); prep call scheduled</li>
+          <li>Need for executive coach with French language + PCC/MCC certification for Paris office</li>
+          <li>Uplift Event Discussion meeting today (3/10) with Karen Mozes and Michael Bodziner</li>
+        </ul>
+        <div class="detail-label">Champions</div>
+        <p>Karen Mozes, Michael Bodziner</p>
+        <div class="detail-label">Pain Points</div>
+        <ul>
+          <li>Fragmented coaching spend across regions with poor visibility</li>
+          <li>Need for specialized multilingual executive coaching (French + PCC/MCC)</li>
+          <li>Vendor consolidation pressure</li>
+        </ul>
+        <div class="detail-label">Risks</div>
+        <ul>
+          <li>Regional data collection difficulty could slow business case building</li>
+          <li>Paris office requirement may be hard to fulfill with current coach network</li>
+          <li>"Test drive" framing may limit initial deal size</li>
+        </ul>
+        <div class="detail-label">Next Steps</div>
+        <ul>
+          <li>Execute discovery workshop on 3/17 with CHRO team</li>
+          <li>Resolve Paris coach sourcing (French + PCC/MCC)</li>
+          <li>Run Uplift prep call to create custom agenda for 5 attendees</li>
+          <li>Continue collecting regional coaching spend data</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Micron -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Micron Technology</span>
+        <span class="acc-subtitle">AI Coaching RFP — 1 Initial Qualification</span>
+      </div>
+      <span class="acc-arr">$200,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>RFP launching soon; NDA sent to Traci McDuffie for signature. RFP due April 3. Rheanne Boren coordinating Uplift attendance + prep call.</p>
+        <div class="detail-label">Key Intelligence</div>
+        <ul>
+          <li>RFP due April 3</li>
+          <li>NDA signature requested urgently from Traci McDuffie</li>
+          <li>5 team members registered for Brené Brown team experience at Uplift</li>
+          <li>Rheanne Boren is key coordinator</li>
+        </ul>
+        <div class="detail-label">Champions</div>
+        <p>Rheanne Boren (coordinator), Traci McDuffie (NDA signer)</p>
+        <div class="detail-label">Pain Points</div>
+        <ul>
+          <li>AI coaching evaluation — need for scalable, tech-enabled coaching solution</li>
+        </ul>
+        <div class="detail-label">Risks</div>
+        <ul>
+          <li>NDA delay could prevent participation in RFP</li>
+          <li>Competitive RFP process — other vendors likely bidding</li>
+          <li>Short timeline to April 3 deadline</li>
+        </ul>
+        <div class="detail-label">Next Steps</div>
+        <ul>
+          <li>Ensure NDA signed before RFP launch</li>
+          <li>Schedule Uplift prep call with Rheanne</li>
+          <li>Begin RFP response preparation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- GitLab -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">GitLab</span>
+        <span class="acc-subtitle">Initial Qualification — RFP Discussion</span>
+      </div>
+      <span class="acc-arr">$250,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>RFP discussion meeting TODAY at 2pm ET. GitLab is consolidating vendors.</p>
+        <div class="detail-label">Key Intelligence</div>
+        <ul>
+          <li>Vendor consolidation effort underway at GitLab</li>
+          <li>Meeting today with Lauren Cairns, Courtney Schneider, Emily Bogaard</li>
+        </ul>
+        <div class="detail-label">Champions</div>
+        <p>Lauren Cairns, Courtney Schneider, Emily Bogaard</p>
+        <div class="detail-label">Pain Points</div>
+        <ul>
+          <li>Vendor fragmentation — looking to consolidate coaching providers</li>
+        </ul>
+        <div class="detail-label">Risks</div>
+        <ul>
+          <li>Early stage qualification — may not progress beyond RFP</li>
+          <li>Consolidation could favor incumbent vendors</li>
+        </ul>
+        <div class="detail-label">Next Steps</div>
+        <ul>
+          <li>Strong prep for today's RFP discussion meeting</li>
+          <li>Understand vendor consolidation criteria and timeline</li>
+          <li>Identify internal champion and decision maker</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zoom -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Zoom</span>
+        <span class="acc-subtitle">AI Coaching — 2 VisionMatch — Close Jun 12</span>
+      </div>
+      <span class="acc-arr">$100,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Demo and follow-up ongoing; close date June 12.</p>
+        <div class="detail-label">Key Intelligence</div>
+        <ul>
+          <li>AI Coaching product is the primary focus</li>
+          <li>VisionMatch stage — still in discovery/demo phase</li>
+        </ul>
+        <div class="detail-label">Risks</div>
+        <ul>
+          <li>Long sales cycle — June close date with potential for slippage</li>
+        </ul>
+        <div class="detail-label">Next Steps</div>
+        <ul>
+          <li>Continue demo follow-up</li>
+          <li>Build urgency and identify compelling event</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- The Hartford -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">The Hartford</span>
+        <span class="acc-subtitle">Re-engagement — 0 Gain Access</span>
+      </div>
+      <span class="acc-arr">$125,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>RFI re-scoped for summer 2026. 25 interactions in last 90 days.</p>
+        <div class="detail-label">Risks</div>
+        <ul><li>Timeline pushed to summer 2026 — needs periodic nurturing</li></ul>
+        <div class="detail-label">Next Steps</div>
+        <ul><li>Maintain quarterly check-ins; monitor for earlier trigger events</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Databricks -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Databricks</span>
+        <span class="acc-subtitle">Re-engagement — 0 Gain Access</span>
+      </div>
+      <span class="acc-arr">$200,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Advisor facilitating HR intro. 39 interactions in last 90 days.</p>
+        <div class="detail-label">Risks</div>
+        <ul><li>Relying on advisor for access — no direct champion yet</li></ul>
+        <div class="detail-label">Next Steps</div>
+        <ul><li>Follow up with advisor on HR intro status; identify direct champion</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stripe -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Stripe</span>
+        <span class="acc-subtitle">Sales Enablement — 0 Gain Access</span>
+      </div>
+      <span class="acc-arr">$300,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Sales enablement outreach stage. 21 interactions in last 90 days.</p>
+        <div class="detail-label">Risks</div>
+        <ul><li>Early stage with no confirmed engagement; large deal at risk of stalling</li></ul>
+        <div class="detail-label">Next Steps</div>
+        <ul><li>Develop targeted outreach with sales enablement angle; identify decision maker</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unity Technologies -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Unity Technologies</span>
+        <span class="acc-subtitle">AI Coaching — 0 Gain Access</span>
+      </div>
+      <span class="acc-arr">$125,000</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>AI coaching interest but timing is CY2027. 12 interactions in last 90 days.</p>
+        <div class="detail-label">Risks</div>
+        <ul><li>Very long timeline — CY2027 target means low near-term priority</li></ul>
+        <div class="detail-label">Next Steps</div>
+        <ul><li>Light-touch nurturing; invite to Uplift or other events to maintain relationship</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teach For America -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Teach For America</span>
+        <span class="acc-subtitle">Active Pipeline — Uplift Registered</span>
+      </div>
+      <span class="acc-arr">TBD</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>TFA senior leaders (SMDs + VPs) registered for Uplift. Demo scheduling for 3/24-26.</p>
+        <div class="detail-label">Key Intelligence</div>
+        <ul>
+          <li>Senior leadership engaged — SMDs and VPs attending Uplift</li>
+          <li>Demo window: March 24-26</li>
+        </ul>
+        <div class="detail-label">Next Steps</div>
+        <ul>
+          <li>Confirm demo scheduling for 3/24-26</li>
+          <li>Prepare tailored demo for education/nonprofit sector</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wonderful Company -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Wonderful Company</span>
+        <span class="acc-subtitle">Relationship Building</span>
+      </div>
+      <span class="acc-arr">TBD</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Lunch scheduled with Kimberley Fernandes on 3/27. Relationship building phase.</p>
+        <div class="detail-label">Next Steps</div>
+        <ul><li>Prepare for lunch meeting; research Wonderful Company L&D priorities</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expedia -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Expedia</span>
+        <span class="acc-subtitle">Uplift Prep — Active</span>
+      </div>
+      <span class="acc-arr">TBD</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Uplift prep meeting scheduled 3/17 with Christine Wickland.</p>
+        <div class="detail-label">Next Steps</div>
+        <ul><li>Prepare Uplift agenda and custom content for Expedia team</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cummins -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Cummins</span>
+        <span class="acc-subtitle">Uplift Prep — Active</span>
+      </div>
+      <span class="acc-arr">TBD</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Uplift prep meeting scheduled 3/17 with Fiona P Devan.</p>
+        <div class="detail-label">Next Steps</div>
+        <ul><li>Prepare Uplift agenda and tailored content for Cummins</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bio-Rad -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <div>
+        <span class="acc-title">Bio-Rad</span>
+        <span class="acc-subtitle">Reconnect — 3/16</span>
+      </div>
+      <span class="acc-arr">TBD</span>
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <div class="detail-label">Situation</div>
+        <p>Reconnect meeting scheduled 3/16 with Jessica Kwock and David Evans.</p>
+        <div class="detail-label">Next Steps</div>
+        <ul><li>Prepare reconnect agenda; identify current L&D pain points at Bio-Rad</li></ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================== ACTION PLAN TAB ========================== -->
+<div id="actions" class="section">
+  <h2>Action Plan</h2>
+  <p class="subtitle">Prioritized actions across the territory</p>
+
+  <div class="grid-2">
+    <!-- Immediate This Week -->
+    <div class="card accent-red">
+      <span class="eyebrow eyebrow-red">Immediate — This Week</span>
+      <ul class="checklist" style="margin-top:12px;">
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Clorox (Mar 13):</span> Confirm PO process and await Laura's fully executed copy</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">GitLab (Today):</span> Strong prep for RFP discussion meeting at 2pm ET</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Blue Shield (Mar 31):</span> Follow up on redlines arrival from Gina Pittman</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Blue Shield:</span> Address offshore IT approval question definitively</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Micron:</span> Ensure NDA signed by Traci McDuffie before RFP launch</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Gensler (Today 3/10):</span> Uplift Event Discussion with Karen Mozes &amp; Michael Bodziner</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Gensler (3/17):</span> Execute discovery workshop with CHRO team</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Gensler:</span> Resolve Paris coach sourcing (French + PCC/MCC certification)</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">ESAB (3/16):</span> Intro meeting with Laleh Malek (VP Talent &amp; Org Dev)</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Bio-Rad (3/16):</span> Reconnect with Jessica Kwock and David Evans</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Blue Shield (3/16):</span> Touch base with Sivu Ramu</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- This Month -->
+    <div class="card accent-gold">
+      <span class="eyebrow eyebrow-gold">This Month</span>
+      <ul class="checklist" style="margin-top:12px;">
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Micron:</span> Schedule Uplift prep call with Rheanne Boren</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Micron:</span> Begin RFP response preparation (due Apr 3)</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Cummins (3/17):</span> Uplift prep with Fiona P Devan</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Expedia (3/17):</span> Uplift prep with Christine Wickland</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Corewell Health (3/19):</span> Intro meeting with Channing McCarthy</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Teach For America (3/24-26):</span> Schedule and execute demo for SMDs &amp; VPs</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Wonderful Company (3/27):</span> Lunch with Kimberley Fernandes</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Blue Shield:</span> Resolve Paymode/Jagger supplier registration</div>
+        </li>
+        <li>
+          <input type="checkbox">
+          <div class="task-text"><span class="task-account">Clorox:</span> Implementation prep — kick off IT/SSO work; March 17 handoff meeting with Sean</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Accounts to Watch -->
+  <div class="card" style="margin-top:20px;">
+    <span class="eyebrow eyebrow-purple">Accounts to Watch</span>
+    <div class="table-wrap" style="margin-top:12px;">
+      <table id="watchTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable('watchTable',0)">Account ↕</th>
+            <th onclick="sortTable('watchTable',1)">Signal ↕</th>
+            <th onclick="sortTable('watchTable',2)">Recommended Action ↕</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>The Hartford</td><td>RFI re-scoped for summer 2026; 25 interactions in 90d</td><td>Maintain quarterly check-ins; monitor for earlier trigger events</td></tr>
+          <tr><td>Databricks</td><td>Advisor facilitating HR intro; 39 interactions in 90d</td><td>Follow up with advisor on HR intro status; identify direct champion</td></tr>
+          <tr><td>Stripe</td><td>Sales enablement outreach stage; 21 interactions in 90d</td><td>Develop targeted outreach with sales enablement angle; identify decision maker</td></tr>
+          <tr><td>Unity Technologies</td><td>AI coaching interest but timing is CY2027; 12 interactions in 90d</td><td>Light-touch nurturing; invite to Uplift or events to maintain relationship</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Uplift Registrations -->
+  <div class="card accent-green" style="margin-top:20px;">
+    <span class="eyebrow eyebrow-green">Uplift Conference Registrations (Apr 15-16, San Francisco)</span>
+    <div class="table-wrap" style="margin-top:12px;">
+      <table id="upliftTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable('upliftTable',0)">Account ↕</th>
+            <th onclick="sortTable('upliftTable',1)">Attendees ↕</th>
+            <th onclick="sortTable('upliftTable',2)">Status ↕</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Blue Shield of CA</td><td>Sivu, Lily, Brittney, Amber, Jessica</td><td>Registered; workshop/session planning underway</td></tr>
+          <tr><td>Gensler</td><td>Michael, Karen, Betsy, Christine, Allie</td><td>5 people; prep call scheduled</td></tr>
+          <tr><td>Micron</td><td>5 team members</td><td>Registered for Brené Brown team experience</td></tr>
+          <tr><td>Teach For America</td><td>TFA senior leaders (SMDs + VPs)</td><td>Registered; demo scheduling for 3/24-26</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- end container -->
+
+<script>
+// ==================== TAB NAVIGATION ====================
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const tabs = ['overview','signals','pipeline','leadership','market','deals','actions'];
+  const btns = document.querySelectorAll('nav button');
+  tabs.forEach((t,i) => { if(t===id && btns[i]) btns[i].classList.add('active'); });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ==================== SORT TABLE ====================
+const sortDirections = {};
+function sortTable(tableId, colIndex) {
+  const table = document.getElementById(tableId);
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const key = tableId + '_' + colIndex;
+  sortDirections[key] = !sortDirections[key];
+  const dir = sortDirections[key] ? 1 : -1;
+
+  rows.sort((a,b) => {
+    let aText = a.cells[colIndex] ? a.cells[colIndex].textContent.trim() : '';
+    let bText = b.cells[colIndex] ? b.cells[colIndex].textContent.trim() : '';
+    // Try numeric
+    let aNum = parseFloat(aText.replace(/[$,K%M]/g,''));
+    let bNum = parseFloat(bText.replace(/[$,K%M]/g,''));
+    if (!isNaN(aNum) && !isNaN(bNum)) return (aNum - bNum) * dir;
+    return aText.localeCompare(bText) * dir;
+  });
+
+  rows.forEach(r => tbody.appendChild(r));
+
+  // Update header arrows
+  const headers = table.querySelectorAll('thead th');
+  headers.forEach((th,i) => {
+    let txt = th.textContent.replace(/ [↕↑↓]/g,'');
+    if (i === colIndex) txt += dir === 1 ? ' ↑' : ' ↓';
+    else txt += ' ↕';
+    th.textContent = txt;
+  });
+}
+
+// ==================== FILTER TABLE ====================
+function filterTable(inputId, tableId) {
+  const filter = document.getElementById(inputId).value.toLowerCase();
+  const table = document.getElementById(tableId);
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(filter) ? '' : 'none';
+  });
+}
+
+// ==================== ACCORDION ====================
+function toggleAccordion(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ==================== RENDER SIGNAL TABLE ====================
+const signalData = [
+  {rank:1, account:'The Clorox Company', type:'Contract', typeCls:'badge-blue', detail:'Order Form signed by Allison; awaiting Laura\'s internal routing & PO confirmation. Close date Mar 13.', action:'Confirm PO process and await Laura\'s fully executed copy. Kick off IT/SSO work ASAP.', score:95},
+  {rank:2, account:'Blue Shield of CA', type:'Contract', typeCls:'badge-blue', detail:'Redlines expected this week from Gina Pittman; tracking Mar 31 PO date; offshore IT approval question pending. Supplier registration not yet received.', action:'Follow up on redlines arrival; address offshore IT approval; resolve Paymode/Jagger registration.', score:93},
+  {rank:3, account:'GitLab', type:'RFP/Buying', typeCls:'badge-green', detail:'RFP discussion meeting TODAY at 2pm ET. Consolidating vendors. $250K opportunity.', action:'Strong prep for RFP discussion; understand consolidation criteria; identify champion.', score:92},
+  {rank:4, account:'Micron Technology', type:'RFP/Buying', typeCls:'badge-green', detail:'AI Coaching RFP launching soon; NDA sent to Traci McDuffie. RFP due April 3. 5 team members registered for Uplift.', action:'Ensure NDA signed before RFP launch; schedule Uplift prep call with Rheanne Boren.', score:90},
+  {rank:5, account:'Gensler', type:'RFP/Buying', typeCls:'badge-green', detail:'Active discovery with CHRO involvement. Workshop 3/17. $250K VisionMatch. Need French PCC/MCC coach for Paris. 5 Uplift attendees.', action:'Execute discovery workshop 3/17; resolve Paris coach sourcing; run Uplift prep call.', score:88},
+  {rank:6, account:'Blue Shield of CA', type:'Earnings', typeCls:'badge-cyan', detail:'Major network disruption in Fresno/San Joaquin Valley — Community Medical Centers leaving network.', action:'Position coaching as resilience & leadership support during disruption. Empathy-first messaging.', score:85},
+  {rank:7, account:'ESAB', type:'Leadership Change', typeCls:'badge-purple', detail:'Laleh Malek appointed VP Talent & Org Dev. Intro meeting scheduled 3/16.', action:'Prepare tailored intro for new VP; position coaching platform early in tenure.', score:84},
+  {rank:8, account:'Teach For America', type:'RFP/Buying', typeCls:'badge-green', detail:'TFA senior leaders (SMDs + VPs) registered for Uplift. Demo scheduling for 3/24-26.', action:'Confirm demo scheduling; prepare education/nonprofit sector tailored demo.', score:82},
+  {rank:9, account:'Zoom', type:'RFP/Buying', typeCls:'badge-green', detail:'AI Coaching VisionMatch — demo and follow-up ongoing. $100K. Close date June 12.', action:'Continue demo follow-up; build urgency; identify compelling event.', score:78},
+  {rank:10, account:'The Clorox Company', type:'Earnings', typeCls:'badge-cyan', detail:'Q2 FY2026 Earnings (Feb 10): EPS $1.39 vs $1.44 forecast; revenue $1.67B. Mixed results, stock dipped. CFO at Citi Conference.', action:'Use mixed earnings to position talent investment. Align with sustainability focus.', score:76},
+  {rank:11, account:'Stripe', type:'RFP/Buying', typeCls:'badge-green', detail:'Sales enablement outreach stage. $300K pipeline. 21 interactions in 90 days. Needs re-engagement.', action:'Develop targeted outreach with sales enablement angle; identify decision maker.', score:74},
+  {rank:12, account:'Databricks', type:'RFP/Buying', typeCls:'badge-green', detail:'Advisor facilitating HR intro. $200K pipeline. 39 interactions in 90 days.', action:'Follow up with advisor on HR intro status; identify direct champion.', score:72},
+  {rank:13, account:'The Hartford', type:'Contract', typeCls:'badge-blue', detail:'RFI re-scoped for summer 2026. $125K pipeline. 25 interactions in 90 days.', action:'Maintain quarterly check-ins; monitor for earlier trigger events.', score:65},
+  {rank:14, account:'Unity Technologies', type:'RFP/Buying', typeCls:'badge-green', detail:'AI coaching interest but timing is CY2027. $125K pipeline. 12 interactions in 90 days.', action:'Light-touch nurturing; invite to Uplift or events.', score:55}
+];
+
+function renderSignalTable() {
+  const tbody = document.getElementById('signalTableBody');
+  let html = '';
+  signalData.forEach(s => {
+    let scoreClass = s.score >= 90 ? 'score-hot' : s.score >= 80 ? 'score-gold' : 'score-cyan';
+    html += `<tr>
+      <td class="mono" style="text-align:center;">${s.rank}</td>
+      <td style="font-weight:700;">${s.account}</td>
+      <td><span class="badge ${s.typeCls}">${s.type}</span></td>
+      <td style="max-width:320px;">${s.detail}</td>
+      <td style="max-width:280px;">${s.action}</td>
+      <td class="mono ${scoreClass}" style="font-weight:700;font-size:16px;text-align:center;">${s.score}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ==================== RENDER OTHER PIPELINE TABLE ====================
+const otherPipeData = [
+  {account:'Zoom',opp:'AI Coaching',arr:'$100,000',stage:'2 - VisionMatch',close:'Jun 12',forecast:'Pipeline',status:'Active','statusCls':'status-active'},
+  {account:'Teach For America',opp:'Senior Leader Coaching',arr:'TBD',stage:'1 - Initial Qualification',close:'TBD',forecast:'Pipeline',status:'Active','statusCls':'status-active'},
+  {account:'The Hartford',opp:'RFI Rescope',arr:'$125,000',stage:'0 - Gain Access',close:'Summer 2026',forecast:'Pipeline',status:'Needs Re-engagement','statusCls':'status-watch'},
+  {account:'Unity Technologies',opp:'AI Coaching',arr:'$125,000',stage:'0 - Gain Access',close:'CY2027',forecast:'Pipeline',status:'Needs Re-engagement','statusCls':'status-watch'},
+  {account:'ESAB',opp:'New Leader Intro',arr:'TBD',stage:'0 - Gain Access',close:'TBD',forecast:'Pipeline',status:'Early Stage','statusCls':'status-active'},
+  {account:'Bio-Rad',opp:'Reconnect',arr:'TBD',stage:'0 - Gain Access',close:'TBD',forecast:'Pipeline',status:'Reconnecting','statusCls':'status-active'},
+  {account:'Corewell Health',opp:'Intro Meeting',arr:'TBD',stage:'0 - Gain Access',close:'TBD',forecast:'Pipeline',status:'Early Stage','statusCls':'status-active'},
+  {account:'Wonderful Company',opp:'Relationship Building',arr:'TBD',stage:'0 - Gain Access',close:'TBD',forecast:'Pipeline',status:'Early Stage','statusCls':'status-active'},
+  {account:'Expedia',opp:'Uplift Pipeline',arr:'TBD',stage:'1 - Initial Qualification',close:'TBD',forecast:'Pipeline',status:'Active','statusCls':'status-active'},
+  {account:'Cummins',opp:'Uplift Pipeline',arr:'TBD',stage:'1 - Initial Qualification',close:'TBD',forecast:'Pipeline',status:'Active','statusCls':'status-active'}
+];
+
+function renderOtherPipeTable() {
+  const tbody = document.getElementById('otherPipeBody');
+  let html = '';
+  otherPipeData.forEach(d => {
+    html += `<tr>
+      <td style="font-weight:700;">${d.account}</td>
+      <td>${d.opp}</td>
+      <td class="mono">${d.arr}</td>
+      <td>${d.stage}</td>
+      <td class="mono">${d.close}</td>
+      <td>${d.forecast}</td>
+      <td class="${d.statusCls}">${d.status}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  renderSignalTable();
+  renderOtherPipeTable();
+});
+</script>
+</body>
+</html>
