@@ -29,13 +29,14 @@
   @keyframes laser-pulse    { 0%,100%{opacity:.55}  50%{opacity:1}   }
   @keyframes flame-flicker  { 0%,100%{opacity:.85}  33%{opacity:1}   66%{opacity:.65} }
   @keyframes backup-flicker { 0%,100%{opacity:.7}   50%{opacity:.95} }
-  @keyframes ring-shimmer   { 0%,100%{opacity:.82}  50%{opacity:1}   }
+  @keyframes ring-shimmer   { 0%,100%{opacity:.88}  50%{opacity:1}   }
   @keyframes sun-spin       { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
   @keyframes energy-flow    { 0%{stroke-dashoffset:18} 100%{stroke-dashoffset:0} }
   @keyframes emergency-blink{ 0%,85%,100%{opacity:1} 90%{opacity:.1} }
   @keyframes callout-breathe{ 0%,100%{opacity:.5}   50%{opacity:.88} }
   @keyframes scan-line      { 0%{transform:translateY(-4px)} 100%{transform:translateY(804px)} }
   @keyframes star-twinkle   { 0%,100%{opacity:.2}   50%{opacity:1}   }
+  @keyframes ring-glow      { 0%,100%{opacity:.7;filter:drop-shadow(0 0 4px #f0b820)} 50%{opacity:1;filter:drop-shadow(0 0 12px #ffd060)} }
 
   .wh-ring  { animation: wh-ring-pulse 2.8s ease-in-out infinite; }
   .wh-ring:nth-child(2){animation-delay:.3s} .wh-ring:nth-child(3){animation-delay:.6s}
@@ -44,8 +45,8 @@
   .laser-beam   { animation: laser-pulse 1.8s ease-in-out infinite; }
   .engine-flame { animation: flame-flicker .28s ease-in-out infinite; }
   .backup-flame { animation: backup-flicker .38s ease-in-out infinite; }
-  .ring-collector { animation: ring-shimmer 4s ease-in-out infinite; }
-  .ring-front   { animation: ring-shimmer 4s ease-in-out .5s infinite; }
+  .ring-collector { animation: ring-shimmer 3.5s ease-in-out infinite; }
+  .ring-front   { animation: ring-shimmer 3.5s ease-in-out .4s infinite; }
   .energy-beam  { animation: energy-flow 1.2s linear infinite; }
   .emerg-light  { animation: emergency-blink 2.2s ease-in-out infinite; }
   .callout      { animation: callout-breathe 5s ease-in-out infinite; }
@@ -59,6 +60,7 @@
     background:linear-gradient(transparent,rgba(0,200,255,0.05),transparent);
     animation:scan-line 9s linear infinite; pointer-events:none; z-index:50;
   }
+  .ring-edge-glow { animation: ring-glow 3.5s ease-in-out infinite; }
 </style>
 </head>
 <body>
@@ -91,26 +93,35 @@
         <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="b"/>
         <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
-      <filter id="glow-ring" x="-30%" y="-80%" width="160%" height="260%">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <filter id="glow-title" x="-20%" y="-50%" width="140%" height="200%">
+      <filter id="glow-ring" x="-80%" y="-30%" width="260%" height="160%">
         <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="glow-title" x="-20%" y="-80%" width="140%" height="360%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/>
         <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
 
-      <!-- Ring mask + clips -->
+      <!--
+        RING GEOMETRY: vertical ellipse going AROUND the hull (perpendicular to ship axis)
+        Outer: rx=58, ry=128  (extends 128px above/below hull center at y=400)
+        Inner hole: rx=22, ry=49  (hull half-height = 42, give 7px clearance)
+        Clip-BACK: hull zone y=354..446 — ring drawn BEFORE station (hidden behind hull)
+        Clip-FRONT: y=0..354 + y=446..800 — ring drawn AFTER station (top/bottom arcs visible in front)
+      -->
       <mask id="ringBandMask">
         <rect x="0" y="0" width="1400" height="800" fill="black"/>
-        <ellipse cx="660" cy="400" rx="365" ry="90" fill="white"/>
-        <ellipse cx="660" cy="400" rx="210" ry="52" fill="black"/>
+        <ellipse cx="668" cy="400" rx="58" ry="128" fill="white"/>
+        <ellipse cx="668" cy="400" rx="22" ry="49" fill="black"/>
       </mask>
+      <!-- Back clip: hull cross-section zone only — ring hidden behind ship here -->
       <clipPath id="ringBackClip">
-        <rect x="0" y="0" width="1400" height="400"/>
+        <rect x="0" y="354" width="1400" height="92"/>
       </clipPath>
+      <!-- Front clip: arcs extending above AND below hull — ring visible in front -->
       <clipPath id="ringFrontClip">
-        <rect x="0" y="400" width="1400" height="400"/>
+        <rect x="0" y="0" width="1400" height="354"/>
+        <rect x="0" y="446" width="1400" height="354"/>
       </clipPath>
 
       <!-- Station gradients -->
@@ -175,29 +186,24 @@
     <g id="stars"></g>
     <line x1="100" y1="400" x2="1200" y2="400" stroke="rgba(0,120,200,0.08)" stroke-width="0.8" stroke-dasharray="10,8"/>
 
-    <!-- ═══ VERTICAL TITLE — left margin ═══ -->
-    <line x1="44" y1="30" x2="44" y2="770" stroke="rgba(0,160,220,0.2)" stroke-width="0.8"/>
-    <g transform="translate(22, 400) rotate(-90)" filter="url(#glow-title)">
-      <text text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="14"
-            letter-spacing="9" fill="#ffffff" opacity="0.9">
-        SUPER INTERNATIONAL SPACE STATION
-      </text>
-      <text text-anchor="middle" y="20" font-family="Share Tech Mono" font-size="8.5"
-            letter-spacing="5" fill="#3aa8cc" opacity="0.7">
-        CONCEPT DESIGN SCHEMATIC — SISS-001 — REV. A
-      </text>
+    <!-- ═══ TITLE — horizontal at top ═══ -->
+    <g filter="url(#glow-title)">
+      <text x="700" y="30" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="17"
+            letter-spacing="9" fill="#ffffff" opacity="0.95">SUPER INTERNATIONAL SPACE STATION</text>
+      <text x="700" y="47" text-anchor="middle" font-family="Share Tech Mono" font-size="9"
+            letter-spacing="5" fill="#3aa8cc" opacity="0.75">CONCEPT DESIGN SCHEMATIC — SISS-001 — REV. A</text>
     </g>
 
-    <!-- Doc meta (SVG text, inside frame) -->
-    <text x="58" y="28" font-family="Share Tech Mono" font-size="7.5" fill="#162840" letter-spacing="1" opacity="0.8">PROJECT: SISS-001  |  DATE: 2026-03-12  |  CLASS: CONCEPT</text>
-    <text x="1370" y="28" text-anchor="end" font-family="Share Tech Mono" font-size="7.5" fill="#162840" letter-spacing="1" opacity="0.8">POWER: ANNULAR SOLAR RING  |  CREW: 24  |  PROPULSION: ION + SPACETIME FOLD</text>
-    <text x="700" y="785" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="#162840" letter-spacing="3" opacity="0.6">SUPER INTERNATIONAL SPACE STATION — SISS-001 — CONCEPT DESIGN SCHEMATIC — UNCLASSIFIED</text>
+    <!-- Doc meta -->
+    <text x="58" y="62" font-family="Share Tech Mono" font-size="7.5" fill="#1a3850" letter-spacing="1" opacity="0.9">PROJECT: SISS-001  |  DATE: 2026-03-12  |  CLASS: CONCEPT</text>
+    <text x="1342" y="62" text-anchor="end" font-family="Share Tech Mono" font-size="7.5" fill="#1a3850" letter-spacing="1" opacity="0.9">POWER: ANNULAR SOLAR RING  |  CREW: 24  |  PROPULSION: ION + SPACETIME FOLD</text>
+    <line x1="58" y1="67" x2="1342" y2="67" stroke="rgba(0,120,200,0.12)" stroke-width="0.6"/>
 
-    <!-- ═══ RING COLLECTOR — BACK ARC (drawn before station) ═══ -->
+    <!-- ═══ RING COLLECTOR — BACK ARC (hull-zone, drawn BEFORE station body) ═══ -->
     <g id="ring-collector-back" clip-path="url(#ringBackClip)" class="ring-collector" filter="url(#glow-ring)"></g>
 
     <!-- ═══ SUN ═══ -->
-    <g transform="translate(1295, 108)" filter="url(#glow-sun)">
+    <g transform="translate(1295, 130)" filter="url(#glow-sun)">
       <circle r="68" fill="none" stroke="#ff8800" stroke-width="1" opacity="0.12"/>
       <circle r="52" fill="none" stroke="#ffaa20" stroke-width="1" opacity="0.18"/>
       <g class="sun-rays-group">
@@ -221,14 +227,14 @@
       <circle r="35" fill="url(#sunFill)" opacity="0.95"/>
       <circle r="22" fill="#fff8d0"/>
       <circle r="12" fill="white"/>
-      <text x="0" y="66" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5"
+      <text x="0" y="68" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5"
             fill="#cc8010" letter-spacing="1.5" opacity="0.7">STELLAR ENERGY SOURCE</text>
     </g>
 
-    <!-- Energy beams: sun → ring back arc -->
-    <line x1="1237" y1="103" x2="660" y2="311" stroke="#e8a820" stroke-width="0.9" stroke-dasharray="7,5" opacity="0.22" class="energy-beam"/>
-    <line x1="1240" y1="108" x2="477" y2="340" stroke="#e8a820" stroke-width="0.9" stroke-dasharray="7,5" opacity="0.18" class="energy-beam" style="animation-delay:0.35s"/>
-    <line x1="1240" y1="108" x2="843" y2="326" stroke="#e8a820" stroke-width="0.9" stroke-dasharray="7,5" opacity="0.20" class="energy-beam" style="animation-delay:0.7s"/>
+    <!-- Energy beams: sun → ring top arc -->
+    <line x1="1237" y1="125" x2="680" y2="273" stroke="#e8a820" stroke-width="1.2" stroke-dasharray="7,5" opacity="0.35" class="energy-beam"/>
+    <line x1="1240" y1="130" x2="655" y2="275" stroke="#e8a820" stroke-width="0.9" stroke-dasharray="7,5" opacity="0.22" class="energy-beam" style="animation-delay:0.35s"/>
+    <line x1="1240" y1="135" x2="690" y2="278" stroke="#e8a820" stroke-width="0.9" stroke-dasharray="7,5" opacity="0.20" class="energy-beam" style="animation-delay:0.7s"/>
 
     <!-- ═══ WORMHOLE PORTAL ═══ -->
     <g transform="translate(130, 400)">
@@ -357,12 +363,10 @@
       <text x="925" y="474" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#cc2020" letter-spacing="1" opacity="0.85">DRIVE</text>
     </g>
 
-    <!-- ═══ RING COLLECTOR — FRONT ARC (drawn after station) ═══ -->
+    <!-- ═══ RING COLLECTOR — FRONT ARC (top+bottom arcs, drawn AFTER station — visible in front) ═══ -->
     <g id="ring-collector-front" clip-path="url(#ringFrontClip)" class="ring-front" filter="url(#glow-ring)"></g>
 
     <!-- ═══ CALLOUT ANNOTATIONS ═══ -->
-    <!-- LEFT callouts: vertical line down/up → horizontal line to x=55 → text-anchor="start" at x=62 -->
-    <!-- RIGHT callouts: vertical line up/down → horizontal line to x=1090 → text-anchor="end" at x=1370 -->
 
     <!-- 1. SPACE-TIME FOLD EMITTER (wormhole) -->
     <g class="callout">
@@ -402,21 +406,21 @@
       <text x="62" y="603" font-family="Share Tech Mono" font-size="7"   fill="#145878" letter-spacing="1">24-PERSON CAPACITY — LIFE SUPPORT — COMMAND CENTER</text>
     </g>
 
-    <!-- 5. STELLAR RING SOLAR COLLECTOR -->
+    <!-- 5. STELLAR RING SOLAR COLLECTOR — points to top arc of vertical ring -->
     <g class="callout">
-      <line x1="660" y1="312" x2="660" y2="122" stroke="#1e6890" stroke-width="0.8"/>
-      <line x1="660" y1="122" x2="1090" y2="122" stroke="#1e6890" stroke-width="0.8"/>
-      <circle cx="660" cy="312" r="2.5" fill="#1e6890"/>
-      <text x="1370" y="116" text-anchor="end" font-family="Share Tech Mono" font-size="9"   fill="#2e90b8" letter-spacing="1.5">STELLAR RING SOLAR COLLECTOR</text>
-      <text x="1370" y="128" text-anchor="end" font-family="Share Tech Mono" font-size="7"   fill="#145878" letter-spacing="1">ANNULAR PHOTOVOLTAIC ARRAY — ENCIRCLES FULL HULL MIDSECTION</text>
-      <text x="1370" y="139" text-anchor="end" font-family="Share Tech Mono" font-size="7"   fill="#0d4060" letter-spacing="1">CHARGES LASER BORE WITH TERAWATT-CLASS SOLAR ENERGY</text>
+      <line x1="668" y1="274" x2="668" y2="118" stroke="#1e6890" stroke-width="0.8"/>
+      <line x1="668" y1="118" x2="1090" y2="118" stroke="#1e6890" stroke-width="0.8"/>
+      <circle cx="668" cy="274" r="2.5" fill="#d4a820"/>
+      <text x="1370" y="112" text-anchor="end" font-family="Share Tech Mono" font-size="9"   fill="#d4a820" letter-spacing="1.5">STELLAR RING SOLAR COLLECTOR</text>
+      <text x="1370" y="124" text-anchor="end" font-family="Share Tech Mono" font-size="7"   fill="#907010" letter-spacing="1">ANNULAR PHOTOVOLTAIC RING — ENCIRCLES HULL PERPENDICULAR TO FLIGHT AXIS</text>
+      <text x="1370" y="135" text-anchor="end" font-family="Share Tech Mono" font-size="7"   fill="#604c08" letter-spacing="1">CHARGES LASER BORE WITH TERAWATT-CLASS SOLAR ENERGY</text>
     </g>
 
     <!-- 6. CENTRAL HULL -->
     <g class="callout">
-      <line x1="660" y1="358" x2="660" y2="248" stroke="#1e6890" stroke-width="0.8"/>
-      <line x1="660" y1="248" x2="1090" y2="248" stroke="#1e6890" stroke-width="0.8"/>
-      <circle cx="660" cy="358" r="2.5" fill="#1e6890"/>
+      <line x1="668" y1="358" x2="668" y2="248" stroke="#1e6890" stroke-width="0.8"/>
+      <line x1="668" y1="248" x2="1090" y2="248" stroke="#1e6890" stroke-width="0.8"/>
+      <circle cx="668" cy="358" r="2.5" fill="#1e6890"/>
       <text x="1370" y="242" text-anchor="end" font-family="Share Tech Mono" font-size="9"   fill="#2e90b8" letter-spacing="1.5">CENTRAL HULL — MISSION MODULE</text>
       <text x="1370" y="254" text-anchor="end" font-family="Share Tech Mono" font-size="7"   fill="#145878" letter-spacing="1">TITANIUM-COMPOSITE STRUCTURE — SCIENCE AND LOGISTICS BAY</text>
     </g>
@@ -458,6 +462,9 @@
       <text x="100" y="-3" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="#2e7090" letter-spacing="2">SCALE REF — NTS</text>
     </g>
 
+    <!-- Footer -->
+    <text x="700" y="788" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="#162840" letter-spacing="3" opacity="0.6">SUPER INTERNATIONAL SPACE STATION — SISS-001 — CONCEPT DESIGN SCHEMATIC — UNCLASSIFIED</text>
+
   </svg>
 
   <script>
@@ -478,41 +485,91 @@
       sg.appendChild(s);
     }
 
-    // Ring collector geometry
-    const CX=660, CY=400, oRx=365, oRy=90, iRx=210, iRy=52, MASK='url(#ringBandMask)';
+    /*
+      RING — vertical ellipse going AROUND the hull perpendicular to flight axis.
+      Center: cx=668, cy=400 (hull midpoint)
+      Outer ellipse: rx=58 (left-right perspective depth), ry=128 (ring radius above/below)
+      Inner hole:    rx=22, ry=49  (just outside hull half-height of 42px)
+
+      The clip-path on each group determines which arc is visible:
+        ring-collector-back  → hull zone (y=354..446) drawn FIRST → hidden behind hull
+        ring-collector-front → top arc (y<354) + bottom arc (y>446) drawn LAST → visible
+    */
+    const CX=668, CY=400, oRx=58, oRy=128, iRx=22, iRy=49, MASK='url(#ringBandMask)';
+
     function el(tag, a) {
       const e = document.createElementNS(svgNS, tag);
       for (const [k,v] of Object.entries(a)) e.setAttribute(k, v);
       return e;
     }
-    function E(rx, ry, a) { return el('ellipse', {cx:CX,cy:CY,rx,ry,...a}); }
+    function E(rx, ry, a) { return el('ellipse', {cx:CX, cy:CY, rx, ry, ...a}); }
 
     function buildRing(target) {
-      target.appendChild(E(oRx, oRy, {fill:'#0b1530', mask:MASK, opacity:'0.95'}));
-      // Ring bands
-      target.appendChild(E(231, 57,  {fill:'none', stroke:'#0e1e50', 'stroke-width':'22', mask:MASK}));
-      target.appendChild(E(281, 69,  {fill:'none', stroke:'#162e7a', 'stroke-width':'52', mask:MASK}));
-      target.appendChild(E(281, 69,  {fill:'none', stroke:'#2244a0', 'stroke-width':'22', mask:MASK, opacity:'0.55'}));
-      target.appendChild(E(326, 80,  {fill:'none', stroke:'#142870', 'stroke-width':'28', mask:MASK}));
-      target.appendChild(E(354, 87,  {fill:'none', stroke:'#0a1530', 'stroke-width':'18', mask:MASK, opacity:'0.6'}));
-      // Grid rows
-      [[216,53.5,0.60],[232,57,0.55],[250,61.5,0.50],[270,66.5,0.55],
-       [290,71.5,0.50],[310,76,0.50],[330,81,0.45],[348,85.5,0.40]].forEach(([rx,ry,op])=>{
-        target.appendChild(E(rx,ry,{fill:'none',stroke:'#c09018','stroke-width':'0.7',mask:MASK,opacity:String(op)}));
+      // ── Dark solar panel base fill ──
+      target.appendChild(E(oRx, oRy, {fill:'#060e22', mask:MASK, opacity:'1'}));
+
+      // ── Panel zone fills (alternating deep-blue bands = solar cell rows) ──
+      target.appendChild(E(29, 62, {fill:'none', stroke:'#0c2268', 'stroke-width':'22', mask:MASK}));
+      target.appendChild(E(38, 80, {fill:'none', stroke:'#0a1e78', 'stroke-width':'26', mask:MASK}));
+      target.appendChild(E(47, 98, {fill:'none', stroke:'#0e2270', 'stroke-width':'24', mask:MASK}));
+      target.appendChild(E(55,115, {fill:'none', stroke:'#0c1c60', 'stroke-width':'22', mask:MASK}));
+
+      // ── Reflective panel surface sheen (subtle lighter blue over each zone) ──
+      target.appendChild(E(29, 62, {fill:'none', stroke:'#1840b0', 'stroke-width':'10', mask:MASK, opacity:'0.35'}));
+      target.appendChild(E(38, 80, {fill:'none', stroke:'#1638a0', 'stroke-width':'10', mask:MASK, opacity:'0.30'}));
+      target.appendChild(E(47, 98, {fill:'none', stroke:'#1438a8', 'stroke-width':'10', mask:MASK, opacity:'0.30'}));
+      target.appendChild(E(55,115, {fill:'none', stroke:'#1230a0', 'stroke-width':'10', mask:MASK, opacity:'0.25'}));
+
+      // ── Solar panel row grid lines (bright amber/gold, clearly visible) ──
+      [
+        [26,55,1.0],[29,62,0.95],[33,70,0.90],[37,78,0.95],
+        [41,87,0.90],[45,95,0.95],[49,104,0.90],[53,112,0.90],
+        [56,119,0.85],[58,124,0.80]
+      ].forEach(([rx,ry,op]) => {
+        target.appendChild(E(rx,ry,{fill:'none',stroke:'#f0b820','stroke-width':'1.4',mask:MASK,opacity:String(op)}));
       });
-      // Edge lines
-      target.appendChild(E(oRx, oRy, {fill:'none', stroke:'#c89020', 'stroke-width':'1.3', opacity:'0.7'}));
-      target.appendChild(E(iRx, iRy, {fill:'none', stroke:'#c89020', 'stroke-width':'1.3', opacity:'0.7'}));
-      target.appendChild(E(257,  63,   {fill:'none', stroke:'#4870cc', 'stroke-width':'2',   mask:MASK, opacity:'0.45'}));
-      target.appendChild(E(311,  76.5, {fill:'none', stroke:'#3458b0', 'stroke-width':'1.5', mask:MASK, opacity:'0.35'}));
-      // Radial grid lines
-      for (let d=0; d<360; d+=15) {
-        const r = d*Math.PI/180, c=Math.cos(r), s=Math.sin(r);
-        target.appendChild(el('line',{
-          x1:(CX+iRx*c).toFixed(1), y1:(CY+iRy*s).toFixed(1),
-          x2:(CX+oRx*c).toFixed(1), y2:(CY+oRy*s).toFixed(1),
-          stroke:'#c09018','stroke-width':'0.6',mask:MASK,opacity:'0.32'
+
+      // ── Zone divider accent lines (electric blue) ──
+      target.appendChild(E(34, 73, {fill:'none', stroke:'#4898ff', 'stroke-width':'2.2', mask:MASK, opacity:'0.7'}));
+      target.appendChild(E(50,107, {fill:'none', stroke:'#3a7ae0', 'stroke-width':'1.8', mask:MASK, opacity:'0.55'}));
+
+      // ── Outer + inner edge highlight (bright gold, glowing) ──
+      target.appendChild(E(oRx, oRy, {fill:'none', stroke:'#ffd060', 'stroke-width':'2.2', opacity:'0.92'}));
+      target.appendChild(E(iRx, iRy, {fill:'none', stroke:'#e8c040', 'stroke-width':'1.6', opacity:'0.85'}));
+
+      // ── Radial panel column separators (gold, 10° intervals, major every 30°) ──
+      for (let d = 0; d < 360; d += 10) {
+        const r = d * Math.PI / 180;
+        const c = Math.cos(r), s = Math.sin(r);
+        const isMajor = (d % 30 === 0);
+        target.appendChild(el('line', {
+          x1: (CX + iRx*c).toFixed(1), y1: (CY + iRy*s).toFixed(1),
+          x2: (CX + oRx*c).toFixed(1), y2: (CY + oRy*s).toFixed(1),
+          stroke: '#d4940c',
+          'stroke-width': isMajor ? '1.3' : '0.65',
+          mask: MASK,
+          opacity: isMajor ? '0.75' : '0.38'
         }));
+      }
+
+      // ── Solar cell glint dots (small bright spots at panel intersections) ──
+      for (let d = 15; d < 360; d += 30) {
+        const r = d * Math.PI / 180;
+        const c = Math.cos(r), s = Math.sin(r);
+        [38, 48, 56].forEach(rr => {
+          // scale rx/ry to rr on the outer axis
+          const frac = (rr - iRy) / (oRy - iRy);
+          const prx = iRx + (oRx - iRx) * frac;
+          const pry = iRy + (oRy - iRy) * frac;
+          target.appendChild(el('circle', {
+            cx: (CX + prx*c).toFixed(1),
+            cy: (CY + pry*s).toFixed(1),
+            r: '1.2',
+            fill: '#ffe080',
+            mask: MASK,
+            opacity: '0.6'
+          }));
+        });
       }
     }
 
