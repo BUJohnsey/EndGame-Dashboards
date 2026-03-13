@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Questionnaire Case — Field Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, ::before, ::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #07090f;
+    --surface:   #111522;
+    --surface2:  #0c0f1a;
+    --border:    #1e2535;
+    --text:      #e2e8f0;
+    --muted:     #64748b;
+    --gold:      #e2a94a;
+    --gold-dim:  rgba(226,169,74,0.12);
+    --gold-glow: rgba(226,169,74,0.06);
+
+    --red:    #ef4444;
+    --orange: #f97316;
+    --green:  #22c55e;
+    --blue:   #3b82f6;
+    --purple: #a855f7;
+    --cyan:   #06b6d4;
+  }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Grid texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,0.025) 59px, rgba(255,255,255,0.025) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,0.025) 59px, rgba(255,255,255,0.025) 60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    height: 56px;
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .nav-brand {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: var(--gold);
+    font-size: 16px;
+    margin-right: 20px;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  nav a {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-radius: 8px 8px 0 0;
+    text-decoration: none;
+    transition: 0.2s;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    height: 56px;
+  }
+
+  nav a:hover { color: var(--text); background: var(--gold-glow); }
+  nav a.active { color: var(--gold); border-bottom: 2px solid var(--gold); background: var(--gold-dim); }
+
+  /* ── Main ── */
+  main {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 80px 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Hero ── */
+  .hero { margin-bottom: 48px; padding-top: 16px; }
+
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    background: rgba(226,169,74,0.12);
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 8px;
+    line-height: 1.15;
+  }
+
+  .hero h1 em { font-style: italic; }
+
+  .hero-sub {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 680px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+  }
+
+  /* ── KPI Grid ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 24px;
+    transition: 0.2s;
+  }
+
+  .kpi-card:hover { transform: translateY(-2px); background: #0d1020; }
+
+  .kpi-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .kpi-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Section headers ── */
+  .section-head { margin-bottom: 24px; scroll-margin-top: 72px; }
+
+  .section-head h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .section-head p { font-size: 13px; color: var(--muted); }
+
+  .section-block { margin-bottom: 56px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    transition: 0.2s;
+  }
+
+  .card:hover { transform: translateY(-2px); background: #0d1020; }
+  .card.gold-top   { border-top-color: var(--gold); }
+  .card.red-top    { border-top-color: var(--red); }
+  .card.green-top  { border-top-color: var(--green); }
+  .card.orange-top { border-top-color: var(--orange); }
+  .card.purple-top { border-top-color: var(--purple); }
+  .card.blue-top   { border-top-color: var(--blue); }
+  .card.cyan-top   { border-top-color: var(--cyan); }
+
+  /* ── Before/After ── */
+  .before-after {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    align-items: center;
+    gap: 0;
+  }
+
+  .state-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: 0.2s;
+  }
+
+  .state-box.before { border-top: 2px solid var(--red); }
+  .state-box.after  { border-top: 2px solid var(--green); }
+
+  .state-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .state-box.before .state-label { color: var(--red); }
+  .state-box.after  .state-label { color: var(--green); }
+
+  .state-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+
+  .state-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+  .state-list li {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.6;
+    padding-left: 18px;
+    position: relative;
+  }
+
+  .state-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+    font-size: 11px;
+    top: 2px;
+  }
+
+  .state-box.before .state-list li::before { color: var(--red); }
+  .state-box.after  .state-list li::before { color: var(--green); }
+
+  .arrow-mid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--muted);
+    font-size: 22px;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .badge-red    { background: rgba(239,68,68,.15);   color: var(--red); }
+  .badge-orange { background: rgba(249,115,22,.15);  color: var(--orange); }
+  .badge-gold   { background: rgba(226,169,74,.15);  color: var(--gold); }
+  .badge-green  { background: rgba(34,197,94,.15);   color: var(--green); }
+  .badge-blue   { background: rgba(59,130,246,.15);  color: var(--blue); }
+  .badge-purple { background: rgba(168,85,247,.15);  color: var(--purple); }
+  .badge-cyan   { background: rgba(6,182,212,.15);   color: var(--cyan); }
+  .badge-muted  { background: rgba(100,116,139,.15); color: var(--muted); }
+  .badge.struck { opacity: 0.5; text-decoration: line-through; }
+
+  /* ── Assignment cards ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .assign-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: 0.2s;
+  }
+
+  .assign-card:hover { transform: translateY(-2px); background: #0d1020; }
+
+  .assign-card-header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .assign-card-header.infosec { border-top: 2px solid #3b82f6; }
+  .assign-card-header.privacy { border-top: 2px solid #a855f7; }
+
+  .assign-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .infosec .assign-dot { background: #3b82f6; }
+  .privacy .assign-dot { background: #a855f7; }
+
+  .assign-team {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .infosec .assign-team { color: #3b82f6; }
+  .privacy .assign-team { color: #a855f7; }
+
+  .assign-card-body { padding: 20px; }
+
+  .assign-person { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+  }
+  .avatar.blue   { background: #2b6cb0; }
+  .avatar.purple { background: #553c9a; }
+
+  .assign-name  { font-weight: 600; font-size: 14px; color: var(--text); }
+  .assign-email { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+  .assign-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Eyebrow labels ── */
+  .eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  /* ── Review box ── */
+  .review-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 28px 32px;
+  }
+
+  .review-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .review-box-intro { font-size: 13px; color: #94a3b8; line-height: 1.7; margin-bottom: 22px; }
+
+  .review-questions { display: flex; flex-direction: column; gap: 10px; }
+
+  .review-q {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.6;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .q-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(226,169,74,0.15);
+    border: 1px solid rgba(226,169,74,0.3);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+
+  /* ── Table ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--gold);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .table-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  .table-header span { font-size: 12px; color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+  thead th {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  thead th.type-col { text-align: center; width: 110px; }
+  thead th.type-col small { display: block; font-size: 9px; font-weight: 500; letter-spacing: 0.5px; margin-top: 2px; text-transform: none; color: var(--muted); }
+
+  thead th.type-col.csq     { color: #60a5fa; }
+  thead th.type-col.infosec { color: #34d399; }
+  thead th.type-col.ai      { color: #c084fc; }
+  thead th.type-col.privacy { color: #f9a8d4; }
+
+  tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(30,37,53,0.6);
+    vertical-align: middle;
+    line-height: 1.5;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover:not(.section-row) { background: rgba(226,169,74,0.04); }
+
+  tbody tr.section-row { background: rgba(30,37,53,0.5); }
+  tbody tr.section-row td {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--gold);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td.field-label { font-weight: 600; font-size: 13px; color: var(--text); }
+  td.field-api   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+  td.field-type  { font-size: 12px; color: var(--muted); }
+  td.check-col   { text-align: center; }
+
+  .check { font-size: 16px; }
+  .yes   { color: var(--green); }
+  .no    { color: #2a3040; }
+  .cond  { color: var(--gold); font-weight: 700; font-size: 15px; }
+
+  .badge-sm {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 20px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .badge-sm.new  { background: rgba(226,169,74,0.15); color: var(--gold); }
+  .badge-sm.auto { background: rgba(6,182,212,0.15);  color: var(--cyan); }
+
+  /* ── Fill bars ── */
+  .fill-wrap { display: flex; align-items: center; gap: 8px; }
+  .fill-track { flex: 1; height: 4px; background: rgba(30,37,53,0.8); border-radius: 2px; overflow: hidden; min-width: 56px; }
+  .fill-bar   { height: 100%; border-radius: 2px; }
+  .fill-pct   { font-size: 10px; color: var(--muted); white-space: nowrap; font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 28px;
+    padding: 16px 24px;
+    background: rgba(30,37,53,0.4);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94a3b8; }
+
+  /* ── Steps ── */
+  .steps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    transition: 0.2s;
+  }
+
+  .step-card:hover { transform: translateY(-2px); background: #0d1020; }
+
+  .step-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    border: 1px solid rgba(226,169,74,0.3);
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-title-text { font-weight: 600; font-size: 13px; color: var(--text); }
+
+  .step-body { font-size: 13px; color: #94a3b8; line-height: 1.7; margin-bottom: 14px; }
+
+  .step-code {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 2;
+  }
+
+  .remove-tag {
+    display: inline-block;
+    background: rgba(239,68,68,0.1);
+    color: var(--red);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin: 2px;
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+
+  .add-tag {
+    display: inline-block;
+    background: rgba(34,197,94,0.1);
+    color: var(--green);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin: 2px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.3px;
+  }
+
+  .routing-note { font-size: 11px; color: var(--muted); font-style: italic; }
+
+  @media print {
+    body { background: white; color: black; }
+    nav { display: none; }
+    main { padding-top: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">BetterUp</span>
+  <a href="#overview" class="active">Overview</a>
+  <a href="#problem">Problem &amp; Solution</a>
+  <a href="#assignment">Assignment</a>
+  <a href="#fields">Field Matrix</a>
+  <a href="#steps">Migration Steps</a>
+</nav>
+
+<main>
+
+  <!-- Hero -->
+  <div class="hero" id="overview">
+    <div class="hero-eyebrow">Proposed Change — Pending Field Review</div>
+    <h1>New Case Type:<br><em>Customer Questionnaire</em></h1>
+    <p class="hero-sub">Sales teams are currently confused between two separate case types for questionnaire requests. This proposal consolidates all questionnaire types into one centralized case, with automatic routing to the right owner.</p>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Q Cases Last 12 Mo</div>
+        <div class="kpi-value">239</div>
+        <div class="kpi-sub">Mar 2025 – Mar 2026</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Questionnaire Types</div>
+        <div class="kpi-value">4</div>
+        <div class="kpi-sub">CSQ, InfoSec, AI, Privacy</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Current Case Types</div>
+        <div class="kpi-value" style="color:#ef4444">2</div>
+        <div class="kpi-sub">Split across Deal Desk + InfoSec/GRC</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Proposed Case Type</div>
+        <div class="kpi-value" style="color:#22c55e">1</div>
+        <div class="kpi-sub">All Q types consolidated</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Problem / Solution -->
+  <div class="section-block">
+    <div class="section-head" id="problem">
+      <h2>Problem &amp; Solution</h2>
+      <p>Current state vs. proposed consolidation</p>
+    </div>
+    <div class="before-after">
+      <div class="state-box before">
+        <div class="state-label">Current State — Confusing</div>
+        <div class="state-chips">
+          <span class="badge badge-red">Deal Desk: Legal</span>
+          <span class="badge badge-red">InfoSec / GRC Request</span>
+        </div>
+        <ul class="state-list">
+          <li>AI Questionnaire, Privacy Questionnaire, and InfoSec Questionnaire live inside Deal Desk: Legal — a contract-focused case type</li>
+          <li>Customer Security Questionnaire (CSQ) lives inside InfoSec / GRC — a separate case type</li>
+          <li>Sales reps don't know which case type to open for a questionnaire request</li>
+          <li>No consistent field set, no automatic routing</li>
+        </ul>
+      </div>
+      <div class="arrow-mid">→</div>
+      <div class="state-box after">
+        <div class="state-label">Proposed State — Centralized</div>
+        <div class="state-chips">
+          <span class="badge badge-green">Customer Questionnaire</span>
+          <span class="badge badge-red struck">AI Q (from Deal Desk)</span>
+        </div>
+        <ul class="state-list">
+          <li>One case type handles all 4 questionnaire subtypes</li>
+          <li>Sales reps pick "Customer Questionnaire" and select the subtype — routing happens automatically</li>
+          <li>Questionnaire values removed from Deal Desk: Legal and InfoSec / GRC picklists so they're no longer selectable there</li>
+          <li>Existing cases on old record types are untouched</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assignment -->
+  <div class="section-block">
+    <div class="section-head" id="assignment">
+      <h2>Auto-Assignment by Questionnaire Type</h2>
+      <p>Cases route automatically based on the Questionnaire Type selected at creation</p>
+    </div>
+    <div class="two-col">
+      <div class="assign-card">
+        <div class="assign-card-header infosec">
+          <div class="assign-dot"></div>
+          <div class="assign-team">InfoSec Team</div>
+        </div>
+        <div class="assign-card-body">
+          <div class="assign-person">
+            <div class="avatar blue">AK</div>
+            <div>
+              <div class="assign-name">Atu Kyeison</div>
+              <div class="assign-email">infosec@betterup.co</div>
+            </div>
+          </div>
+          <div class="assign-types">
+            <span class="badge badge-blue">Customer Security Questionnaire (CSQ)</span>
+            <span class="badge badge-cyan">InfoSec Questionnaire</span>
+          </div>
+        </div>
+      </div>
+      <div class="assign-card">
+        <div class="assign-card-header privacy">
+          <div class="assign-dot"></div>
+          <div class="assign-team">Privacy Team</div>
+        </div>
+        <div class="assign-card-body">
+          <div class="assign-person">
+            <div class="avatar purple">EC</div>
+            <div>
+              <div class="assign-name">Elisa Cooke</div>
+              <div class="assign-email">privacy@betterup.co</div>
+            </div>
+          </div>
+          <div class="assign-types">
+            <span class="badge badge-purple">AI Questionnaire</span>
+            <span class="badge badge-orange">Privacy / Data Questionnaire</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviewer callout -->
+  <div class="section-block">
+    <div class="review-box">
+      <h3>Reviewers: Please confirm the fields below</h3>
+      <p class="review-box-intro">The field list is based on what was actually used across 239 questionnaire cases in the last 12 months. Fields with very low usage have been excluded from the proposal. Please review and flag any fields that are missing, incorrectly included, or should be required.</p>
+      <div class="review-questions">
+        <div class="review-q"><span class="q-icon">?</span>Are there any fields currently used in your workflow that are <strong>&nbsp;missing&nbsp;</strong> from this list?</div>
+        <div class="review-q"><span class="q-icon">?</span>Are any of the proposed fields <strong>&nbsp;not actually needed&nbsp;</strong> for questionnaire cases?</div>
+        <div class="review-q"><span class="q-icon">?</span>The <strong>&nbsp;CSQ-specific fields&nbsp;</strong> (CSQ Format, Status of NDA, Status of Enterprise Agreement) are proposed to be hidden on AI/Privacy/InfoSec cases — is that correct?</div>
+        <div class="review-q"><span class="q-icon">?</span>Should <strong>&nbsp;Enterprise Agreement Complete&nbsp;</strong> also appear on CSQ cases, or only AI/Privacy/InfoSec?</div>
+        <div class="review-q"><span class="q-icon">?</span>Are Atu and Elisa the correct assignees, or should a <strong>&nbsp;queue&nbsp;</strong> be used instead?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Field Matrix -->
+  <div class="section-block">
+    <div class="section-head" id="fields">
+      <h2>Proposed Field Matrix</h2>
+      <p>Based on actual field usage across 239 questionnaire cases — please review and confirm</p>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Fields by Questionnaire Type</h3>
+        <span>239 cases · March 2025 – March 2026</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:185px">Field Label</th>
+            <th style="width:210px">API Name</th>
+            <th style="width:90px">Type</th>
+            <th class="type-col csq">CSQ<small>109 cases</small></th>
+            <th class="type-col infosec">InfoSec Q<small>12 cases</small></th>
+            <th class="type-col ai">AI Q<small>75 cases</small></th>
+            <th class="type-col privacy">Privacy / Data Q<small>43 cases</small></th>
+            <th style="width:155px">Usage</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr class="section-row"><td colspan="8">Section 1 — Case Header (always visible)</td></tr>
+          <tr>
+            <td class="field-label">Subject</td>
+            <td class="field-api">Subject</td>
+            <td class="field-type">Text</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% all</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Status</td>
+            <td class="field-api">Status</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% all</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Owner <span class="badge-sm auto">Auto-set</span></td>
+            <td class="field-api">OwnerId</td>
+            <td class="field-type">Lookup</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% all</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Priority</td>
+            <td class="field-api">Priority</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:99%;background:#22c55e"></div></div><span class="fill-pct">99% all</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Description</td>
+            <td class="field-api">Description</td>
+            <td class="field-type">Text Area</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:53%;background:#e2a94a"></div></div><span class="fill-pct">42–75%</span></div></td>
+          </tr>
+
+          <tr class="section-row"><td colspan="8">Section 2 — Account &amp; Opportunity (always visible)</td></tr>
+          <tr>
+            <td class="field-label">Account</td>
+            <td class="field-api">AccountId</td>
+            <td class="field-type">Lookup</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:90%;background:#22c55e"></div></div><span class="fill-pct">88–95%</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Account Type</td>
+            <td class="field-api">Account_Type__c</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:36%;background:#e2a94a"></div></div><span class="fill-pct">0–44%</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Opportunity</td>
+            <td class="field-api">Opportunity__c</td>
+            <td class="field-type">Lookup</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:89%;background:#22c55e"></div></div><span class="fill-pct">85–95%</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Opportunity Amount</td>
+            <td class="field-api">Opportunity_Amount__c</td>
+            <td class="field-type">Number</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% all</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Opportunity Type</td>
+            <td class="field-api">Opportunity_Type__c</td>
+            <td class="field-type">Text</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:89%;background:#22c55e"></div></div><span class="fill-pct">85–95%</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Case Currency</td>
+            <td class="field-api">CurrencyIsoCode</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% all</span></div></td>
+          </tr>
+
+          <tr class="section-row"><td colspan="8">Section 3 — Questionnaire Details (always visible)</td></tr>
+          <tr>
+            <td class="field-label">Questionnaire Type</td>
+            <td class="field-api">Agreement_Type__c</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% all</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Form of Agreement</td>
+            <td class="field-api">Form_of_Agreement__c</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:74%;background:#22c55e"></div></div><span class="fill-pct">49–100%</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Enterprise Agreement Complete</td>
+            <td class="field-api">Enterprise_Agreement_Complete__c</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td class="check-col"><span class="cond">~</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:40%;background:#e2a94a"></div></div><span class="fill-pct">0% CSQ / 25–58%</span></div></td>
+          </tr>
+
+          <tr class="section-row"><td colspan="8">Section 4 — CSQ-Specific Details (only visible when Questionnaire Type = CSQ)</td></tr>
+          <tr>
+            <td class="field-label">CSQ Format</td>
+            <td class="field-api">CSQ_Format__c</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% CSQ only</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Status of NDA</td>
+            <td class="field-api">Status_of_NDA__c</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% CSQ only</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Status of Enterprise Agreement</td>
+            <td class="field-api">Status_of_Enterprise_Agreement__c</td>
+            <td class="field-type">Picklist</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td class="check-col"><span class="check no">✗</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:48%;background:#e2a94a"></div></div><span class="fill-pct">48% CSQ only</span></div></td>
+          </tr>
+
+          <tr class="section-row"><td colspan="8">Section 5 — Assignment &amp; Routing (read-only)</td></tr>
+          <tr>
+            <td class="field-label">Routing Email <span class="badge-sm new">New</span></td>
+            <td class="field-api">Questionnaire_Routing_Email__c</td>
+            <td class="field-type">Formula</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><span class="routing-note">Returns infosec@ or privacy@ based on type</span></td>
+          </tr>
+
+          <tr class="section-row"><td colspan="8">Section 6 — Internal Metadata (collapsed by default)</td></tr>
+          <tr>
+            <td class="field-label">Case Creator Region</td>
+            <td class="field-api">Case_Creator_Region__c</td>
+            <td class="field-type">Text</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% all</span></div></td>
+          </tr>
+          <tr>
+            <td class="field-label">Case Creator ID</td>
+            <td class="field-api">Case_Creator_ID__c</td>
+            <td class="field-type">Text</td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td class="check-col"><span class="check yes">✓</span></td>
+            <td><div class="fill-wrap"><div class="fill-track"><div class="fill-bar" style="width:100%;background:#22c55e"></div></div><span class="fill-pct">100% all</span></div></td>
+          </tr>
+
+        </tbody>
+      </table>
+      <div class="legend">
+        <div class="legend-item"><span style="color:#22c55e;font-size:15px">✓</span> Include on this questionnaire type</div>
+        <div class="legend-item"><span style="color:#2a3040;font-size:15px">✗</span> Hide on this questionnaire type</div>
+        <div class="legend-item"><span style="color:#e2a94a;font-weight:700">~</span> Low usage — confirm if needed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="section-block">
+    <div class="section-head" id="steps">
+      <h2>Migration Steps</h2>
+      <p>How questionnaire types get removed from existing case types and added to the new one</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-card-title">
+          <span class="step-num">1</span>
+          <span class="step-title-text">Restrict picklist on Deal Desk: Legal</span>
+        </div>
+        <p class="step-body">Remove questionnaire values from the <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(30,37,53,0.8);padding:1px 5px;border-radius:4px;color:#94a3b8">Agreement_Type__c</code> picklist for the Deal Desk: Legal record type. New cases will no longer be able to select these values. Existing cases are unaffected.</p>
+        <div class="step-code">
+          Remove:<br>
+          <span class="remove-tag">AI Questionnaire</span>
+          <span class="remove-tag">Privacy Questionnaire</span>
+          <span class="remove-tag">InfoSec Questionnaire</span>
+          <span class="remove-tag">CSQ</span>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-card-title">
+          <span class="step-num">2</span>
+          <span class="step-title-text">Restrict picklist on InfoSec / GRC Request</span>
+        </div>
+        <p class="step-body">Same change for InfoSec / GRC Request. The CSQ type moves to the new Customer Questionnaire case type exclusively.</p>
+        <div class="step-code">
+          Remove:<br>
+          <span class="remove-tag">Customer Security Questionnaire (CSQ)</span>
+          <span class="remove-tag">AI Questionnaire</span>
+          <span class="remove-tag">Privacy Questionnaire</span>
+          <span class="remove-tag">InfoSec Questionnaire</span>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-card-title">
+          <span class="step-num">3</span>
+          <span class="step-title-text">Add values to new Customer Questionnaire RT</span>
+        </div>
+        <p class="step-body">The same picklist values become available exclusively on the new Customer Questionnaire record type, keeping picklist values in sync with naming.</p>
+        <div class="step-code">
+          Add:<br>
+          <span class="add-tag">Customer Security Questionnaire (CSQ)</span>
+          <span class="add-tag">AI Questionnaire</span>
+          <span class="add-tag">Privacy / Data Questionnaire</span>
+          <span class="add-tag">InfoSec Questionnaire</span>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-card-title">
+          <span class="step-num">4</span>
+          <span class="step-title-text">Existing cases stay intact</span>
+        </div>
+        <p class="step-body">The 239 questionnaire cases created on old record types in the last year — and all historical cases — are completely unaffected. Picklist restrictions only apply to new case creation going forward.</p>
+        <div class="step-code">
+          239 questionnaire cases on old RTs → untouched<br>
+          New questionnaire cases → Customer Questionnaire RT only<br>
+          Old RTs → no longer show Q types in picklist
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Prepared by Austin Johnsey &nbsp;·&nbsp; BetterUp Revenue Operations &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; Based on 239 questionnaire cases (March 2025 – March 2026)
+  </div>
+
+</main>
+
+<script>
+  // Active nav link on scroll
+  const sections = ['overview','problem','assignment','fields','steps'];
+  const links = {};
+  sections.forEach(id => {
+    links[id] = document.querySelector(`nav a[href="#${id}"]`);
+  });
+
+  window.addEventListener('scroll', () => {
+    let current = 'overview';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.getBoundingClientRect().top + window.scrollY - 80) {
+        current = id;
+      }
+    });
+    Object.values(links).forEach(l => l && l.classList.remove('active'));
+    if (links[current]) links[current].classList.add('active');
+  });
+
+  // Smooth scroll
+  document.querySelectorAll('nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.getElementById(a.getAttribute('href').slice(1));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
